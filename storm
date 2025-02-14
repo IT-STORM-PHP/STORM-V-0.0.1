@@ -1,0 +1,10 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php'; // Charger les dépendances si tu utilises Composer
+
+use App\Console\Kernel;
+
+$kernel = new Kernel();
+$kernel->handle($argv);
+    

@@ -1,0 +1,2 @@
+Charger les fichier composer de l'autoload avec composer : composer dump-autoload
+Les test unitaires sont en cours de dévellopement.

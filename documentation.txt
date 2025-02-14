@@ -1,0 +1,27 @@
+🚀 Exemples d'utilisation : Des Route
+1️⃣ Définir des routes simples:
+
+use App\Routes\Route;
+use App\Controllers\UserController;
+
+Route::get('/home', function () {
+    echo "Bienvenue sur la page d'accueil";
+});
+
+Route::get('/users/{id}', [UserController::class, 'show']);
+
+
+2️⃣ Rediriger vers une méthode spécifique:
+Route::post('/users/create', [UserController::class, 'create']);
+
+3️⃣ Ajouter un middleware pour une route : (Sécurise l'url et empeche un utilisateur non connecté d'y accédder)
+Route::beforeMiddleware('/dashboard', function () {
+    if (!isset($_SESSION['user'])) {
+        header("Location: /login");
+        exit();
+    }
+});
+
+Route::get('/dashboard', function () {
+    echo "Bienvenue sur votre tableau de bord";
+});
