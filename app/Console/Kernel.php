@@ -345,7 +345,7 @@ class Kernel
 
         function readTemplate($path)
         {
-            return file_get_contents(__DIR__ . "../../public/{$path}.php");
+            return file_get_contents(__DIR__ . "../../../public/{$path}.php");
         }
 
         $htmlHeader = readTemplate('_header');
