@@ -357,6 +357,7 @@ class Kernel
             $listViewContent .= "<td><?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></td>";
         }
         $listViewContent .= "<td>
+        <a href='/{$modelLower}/show/<?php echo \$item['id']; ?>' class='btn btn-info btn-sm'>Show</a>
         <a href='/{$modelLower}/edit/<?php echo \$item['id']; ?>' class='btn btn-warning btn-sm'>Edit</a>
         <form action='/{$modelLower}/delete/<?php echo \$item['id']; ?>' method='POST' class='d-inline'>
             <button type='submit' class='btn btn-danger btn-sm'>Delete</button>
@@ -381,12 +382,16 @@ class Kernel
         file_put_contents("{$viewDir}/create.php", $createViewContent);
 
         // Vue Show
-        $showViewContent = "{$htmlHeader}\n<h1 class='mb-4'>Show {$model}</h1>\n<?php foreach (\$items as \$item): ?>\n";
+        $showViewContent = "{$htmlHeader}\n<h1 class='mb-4'>Show {$model}</h1>\n";
+        $showViewContent .= "<?php if (!empty(\$item)): ?>\n";
         $showViewContent .= "<div class='card mb-4'>\n<div class='card-body'>\n";
+
         foreach ($columns as $column) {
-            $showViewContent .= "<p><strong>{$column['Field']}:</strong> <?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></p>\n";
+            $showViewContent .= "<p><strong>{$column['Field']}:</strong> <?php echo htmlspecialchars(\$item['{$column['Field']}'] ?? 'N/A'); ?></p>\n";
         }
-        $showViewContent .= "</div>\n</div>\n<?php endforeach; ?>\n";
+
+        $showViewContent .= "</div>\n</div>\n";
+        $showViewContent .= "<?php else: ?>\n<p class='text-danger'>Aucune donnée trouvée.</p>\n<?php endif; ?>\n";
         $showViewContent .= "<a href='/{$modelLower}' class='btn btn-secondary'>Back to List</a>\n{$htmlFooter}";
 
         file_put_contents("{$viewDir}/show.php", $showViewContent);
@@ -432,6 +437,7 @@ class Kernel
         $routes = [
             "Route::get('/{$modelLower}', [{$controllerClass}::class, 'index']);",
             "Route::get('/{$modelLower}/create', [{$controllerClass}::class, 'create']);",
+            "Route::get('/{$modelLower}/show/{id}', [{$controllerClass}::class, 'show']);",
             "Route::post('/{$modelLower}/store', [{$controllerClass}::class, 'store']);",
             "Route::get('/{$modelLower}/edit/{id}', [{$controllerClass}::class, 'edit']);",
             "Route::post('/{$modelLower}/update/{id}', [{$controllerClass}::class, 'update']);",
@@ -482,6 +488,11 @@ class Kernel
         $controllerContent .= "        // Logique pour afficher la liste\n";
         $controllerContent .= "        \$items = \$this->model->getAll();\n";
         $controllerContent .= "        return View::render('{$modelLower}/index', ['items' => \$items]);\n";
+        $controllerContent .= "    }\n";
+        $controllerContent .= "    public function show(\$id)\n    {\n";
+        $controllerContent .= "        // Logique pour afficher un élément\n";
+        $controllerContent .= "        \$item = \$this->model->read(\$id);\n";
+        $controllerContent .= "        return View::render('{$modelLower}/show', ['item' => \$item]);\n";
         $controllerContent .= "    }\n";
         $controllerContent .= "    public function create()\n    {\n";
         $controllerContent .= "        // Logique pour afficher le formulaire de création\n";
