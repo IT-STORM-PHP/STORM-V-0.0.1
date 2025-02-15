@@ -107,6 +107,37 @@
                     <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Lancer le serveur</h5>
+                        <p class="card-text">Pour lancer le serveur local sur le port 8000, utilisez <span class="cli-command">php storm serve</span>.</p>
+                        <p class="card-text">Pour lancer le serveur sur un port et une adresse spécifique, utilisez <span class="cli-command">php storm serve <strong>--host=[@IP]</strong> <strong>--port=[numPort]</strong></span>.</p>
+                        <a href="#" class="btn btn-primary">En savoir plus</a>
+                    </div>
+                    <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Annullation de migration</h5>
+                        <p class="card-text">La commance <span class="cli-command">php storm rollback</span> annule la dernière migration effectuée.</p>
+                        <a href="#" class="btn btn-primary">En savoir plus</a>
+                    </div>
+                    <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Créer un nouveau controlleur</h5>
+                        <p class="card-text">Utilisez la commande <span class="cli-command">php storm make:controllers <strong>nom_controller</strong></span>.</p>
+                        <a href="#" class="btn btn-primary">En savoir plus</a>
+                    </div>
+                    <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
+                </div>
+            </div>
         </div>
     </section>
 
