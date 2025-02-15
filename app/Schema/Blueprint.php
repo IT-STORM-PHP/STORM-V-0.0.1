@@ -9,14 +9,14 @@ class Blueprint
     private ?string $primaryKey = null;
     private array $foreignKeys = [];
     private array $uniqueConstraints = [];
-    private array $alterations = []; // Ajout pour ALTER TABLE
+    private array $alterations = [];
 
     public function __construct(string $table)
     {
         $this->table = $table;
     }
 
-    // Clé primaire auto-incrémentée avec un nom par défaut "id"
+    // Clé primaire auto-incrémentée
     public function id(string $column = 'id')
     {
         $this->primaryKey = $column;
@@ -65,11 +65,11 @@ class Blueprint
         $this->columns[$column] = "`$column` ENUM($escapedValues) NOT NULL";
     }
 
-    // Ajout de timestamps (created_at & updated_at)
+    // Ajout de timestamps (created_at & updated_at) + Trigger pour empêcher modification de created_at
     public function timestamps()
     {
-        $this->columns["created_at"] = "`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-        $this->columns["updated_at"] = "`updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        $this->columns["created_at"] = "`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
+        $this->columns["updated_at"] = "`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
     }
 
     // Clés étrangères avec gestion des contraintes
@@ -85,7 +85,7 @@ class Blueprint
         $this->foreignKeys[] = $constraint;
     }
 
-    // Ajout d'options supplémentaires aux colonnes
+    // Ajout d'options aux colonnes
     public function nullable(string $column)
     {
         if (isset($this->columns[$column])) {
@@ -138,14 +138,35 @@ class Blueprint
         $this->alterations[] = "ADD INDEX (`$column`)";
     }
 
-    // Génération du SQL de création
+    // Génération du SQL de création de table
     public function getSQL(): string
     {
         $columnsSQL = implode(", ", $this->columns);
         $foreignKeysSQL = !empty($this->foreignKeys) ? ", " . implode(", ", $this->foreignKeys) : "";
         $uniqueSQL = !empty($this->uniqueConstraints) ? ", " . implode(", ", $this->uniqueConstraints) : "";
 
-        return "CREATE TABLE `{$this->table}` ($columnsSQL $foreignKeysSQL $uniqueSQL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        // Générer le SQL pour créer la table
+        $createTableSQL = "CREATE TABLE `{$this->table}` ($columnsSQL $foreignKeysSQL $uniqueSQL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+        // Générer le trigger
+        $triggerSQL = $this->addTriggers();
+
+        // Retourner le SQL complet : création de la table suivi de la création du trigger
+        return $createTableSQL . "\n" . $triggerSQL;
+    }
+
+    // Génération du SQL pour empêcher la modification de created_at
+    public function addTriggers(): string
+    {
+        return "
+            
+            CREATE TRIGGER `prevent_update_created_at`
+            BEFORE UPDATE ON `{$this->table}`
+            FOR EACH ROW
+            BEGIN
+                SET NEW.created_at = OLD.created_at;
+            END;
+        ";
     }
 
     // Génération du SQL de modification (ALTER TABLE)

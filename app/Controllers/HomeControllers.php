@@ -11,9 +11,10 @@ class HomeControllers extends Controller
         // Action par défaut
         $data = [
             'title' => 'Accueil',
-            'content' => 'Bienvenue sur le site de la formation PHP'
+            'description' => 'Bienvenue sur STORM MVC',
             
         ];
-        return View::jsonResponse($data);
+        
+        return View::render('home/index');
     }
 }
