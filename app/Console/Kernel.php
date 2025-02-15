@@ -348,7 +348,7 @@ class Kernel
 
         // Vue Index
         $listViewContent = "{$htmlHeader}\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table'>\n<thead class='table-light'><tr>";
-        
+
         foreach ($columns as $column) {
             $listViewContent .= "<th>{$column['Field']}</th>";
         }
@@ -379,6 +379,17 @@ class Kernel
         }
         $createViewContent .= "<button type='submit' class='btn btn-success'>Create {$model}</button>\n</form>\n{$htmlFooter}";
         file_put_contents("{$viewDir}/create.php", $createViewContent);
+
+        // Vue Show
+        $showViewContent = "{$htmlHeader}\n<h1 class='mb-4'>Show {$model}</h1>\n<?php foreach (\$items as \$item): ?>\n";
+        $showViewContent .= "<div class='card mb-4'>\n<div class='card-body'>\n";
+        foreach ($columns as $column) {
+            $showViewContent .= "<p><strong>{$column['Field']}:</strong> <?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></p>\n";
+        }
+        $showViewContent .= "</div>\n</div>\n<?php endforeach; ?>\n";
+        $showViewContent .= "<a href='/{$modelLower}' class='btn btn-secondary'>Back to List</a>\n{$htmlFooter}";
+
+        file_put_contents("{$viewDir}/show.php", $showViewContent);
 
         // Vue Edit
         $editViewContent = "{$htmlHeader}\n<h1>Edit {$model}</h1>\n<form method='POST' action='/{$modelLower}/update/<?php echo \$item['id']; ?>' class='mt-4'>\n";
