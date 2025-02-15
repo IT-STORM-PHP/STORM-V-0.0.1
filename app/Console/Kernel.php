@@ -347,7 +347,7 @@ class Kernel
         $htmlFooter = "<script src='/assets/vendor/bootstrap/js/bootstrap.bundle.min.js'></script>\n</body>\n</html>";
 
         // Vue Index
-        $listViewContent = "{$htmlHeader}\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table table-striped'>\n<thead><tr>";
+        $listViewContent = "{$htmlHeader}\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table'>\n<thead class='table-light'><tr>";
         
         foreach ($columns as $column) {
             $listViewContent .= "<th>{$column['Field']}</th>";
