@@ -343,8 +343,13 @@ class Kernel
             return 'text';
         }
 
-        $htmlHeader = "<!DOCTYPE html>\n<html lang='en'>\n<head>\n<meta charset='UTF-8'>\n<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n<title>{$model} Management</title>\n<link rel='stylesheet' href='/assets/vendor/bootstrap/css/bootstrap.min.css'>\n</head>\n<body class='container mt-5'>";
-        $htmlFooter = "<script src='/assets/vendor/bootstrap/js/bootstrap.bundle.min.js'></script>\n</body>\n</html>";
+        function readTemplate($path)
+        {
+            return file_get_contents(__DIR__ . "../../public/{$path}.php");
+        }
+
+        $htmlHeader = readTemplate('_header');
+        $htmlFooter = readTemplate('_footer');
 
         // Vue Index
         $listViewContent = "{$htmlHeader}\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table'>\n<thead class='table-light'><tr>";

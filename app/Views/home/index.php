@@ -121,8 +121,8 @@
             <div class="col-md-4">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Annullation de migration</h5>
-                        <p class="card-text">La commance <span class="cli-command">php storm rollback</span> annule la dernière migration effectuée.</p>
+                        <h5 class="card-title">Annulation de migration</h5>
+                        <p class="card-text">La commande <span class="cli-command">php storm rollback</span> annule la dernière migration effectuée.</p>
                         <a href="#" class="btn btn-primary">En savoir plus</a>
                     </div>
                     <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
@@ -131,7 +131,7 @@
             <div class="col-md-4">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Créer un nouveau controlleur</h5>
+                        <h5 class="card-title">Créer un nouveau contrôlleur</h5>
                         <p class="card-text">Utilisez la commande <span class="cli-command">php storm make:controllers <strong>nom_controller</strong></span>.</p>
                         <a href="#" class="btn btn-primary">En savoir plus</a>
                     </div>
