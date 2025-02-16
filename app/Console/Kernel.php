@@ -330,15 +330,23 @@ class Kernel
         // Méthode Update
         $modelContent .= "\n    public function update(\$id, \$data)\n    {\n";
         $modelContent .= "        \$sql = \"UPDATE " . strtolower($model) . " SET ";
-        $modelContent .= implode(", ", array_map(fn($col) => "{$col['Field']} = :{$col['Field']}", $columns));
+        // Filtrer les colonnes pour exclure 'created_at'
+        $filteredColumns = array_filter($columns, fn($col) => $col['Field'] !== 'created_at');
+        $modelContent .= implode(", ", array_map(fn($col) => "{$col['Field']} = :{$col['Field']}", $filteredColumns));
         $modelContent .= " WHERE id = :id\";\n";
         $modelContent .= "        \$stmt = \$this->pdo->prepare(\$sql);\n";
-        foreach ($columns as $column) {
+        
+        // Lier uniquement les colonnes qui ne sont pas 'created_at'
+        foreach ($filteredColumns as $column) {
             $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']);\n";
         }
+        
         $modelContent .= "        \$stmt->bindParam(':id', \$id);\n";
         $modelContent .= "        return \$stmt->execute();\n";
         $modelContent .= "    }\n";
+        
+        
+
 
         // Méthode Delete
         $modelContent .= "\n    public function delete(\$id)\n    {\n";
