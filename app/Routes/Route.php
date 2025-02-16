@@ -4,17 +4,12 @@ namespace App\Routes;
 class Route {
     private static array $routes = [];
     private static array $middlewares = [];
+    private static array $beforeMiddlewares = [];
 
-    /**
-     * Enregistre une route avec une méthode HTTP spécifique.
-     */
     public static function add(string $method, string $uri, array|string|callable $action) {
         self::$routes[strtoupper($method)][$uri] = $action;
     }
 
-    /**
-     * Alias pour enregistrer des routes GET, POST, PUT, DELETE.
-     */
     public static function get(string $uri, array|string|callable $action) {
         self::add('GET', $uri, $action);
     }
@@ -31,34 +26,35 @@ class Route {
         self::add('DELETE', $uri, $action);
     }
 
-    /**
-     * Ajoute un middleware avant une route.
-     */
-    public static function beforeMiddleware(string $uri, callable $middleware) {
-        self::$middlewares[$uri] = $middleware;
+    public static function middleware(string $uri, callable|array $middleware) {
+        self::$middlewares[$uri][] = $middleware;
     }
 
-    /**
-     * Gère l'exécution des routes.
-     */
+    public static function beforeMiddleware(string $prefix, callable $callback) {
+        self::$beforeMiddlewares[$prefix][] = $callback;
+    }
+
     public static function dispatch() {
         $method = $_SERVER['REQUEST_METHOD'];
-        $uri = strtok($_SERVER['REQUEST_URI'], '?'); // Supprime les paramètres GET
+        $uri = strtok($_SERVER['REQUEST_URI'], '?');
         $foundRoute = false;
+
+        foreach (self::$beforeMiddlewares as $prefix => $callbacks) {
+            if (strpos($uri, $prefix) === 0) {
+                foreach ($callbacks as $callback) {
+                    call_user_func($callback);
+                }
+            }
+        }
 
         foreach (self::$routes as $routeMethod => $routes) {
             foreach ($routes as $route => $action) {
                 $pattern = preg_replace('#\{(\w+)\}#', '([^/]+)', $route);
-
                 if (preg_match("#^$pattern$#", $uri, $matches)) {
-                    array_shift($matches); // Supprime l'URL complète du tableau
-
-                    // Si la méthode existe, exécuter la route
+                    array_shift($matches);
                     if ($routeMethod === $method) {
                         return self::handleRoute($route, $action, $matches);
                     }
-
-                    // Route trouvée mais avec mauvaise méthode -> 405
                     $foundRoute = true;
                 }
             }
@@ -70,28 +66,28 @@ class Route {
             exit();
         }
 
-        // Route non trouvée -> 404
         http_response_code(404);
         echo "404 - Page introuvable";
         exit();
     }
 
-    /**
-     * Exécute une route en tenant compte des middlewares.
-     */
     private static function handleRoute($route, $action, $params) {
-        // Exécute le middleware avant la route si défini
         if (isset(self::$middlewares[$route])) {
-            call_user_func(self::$middlewares[$route]);
+            foreach (self::$middlewares[$route] as $middleware) {
+                if (is_array($middleware) && count($middleware) === 2) {
+                    [$class, $method] = $middleware;
+                    if (class_exists($class) && method_exists($class, $method)) {
+                        call_user_func([new $class, $method]);
+                    }
+                } else {
+                    call_user_func($middleware);
+                }
+            }
         }
 
-        // Exécute l'action correspondante
         return self::execute($action, $params);
     }
 
-    /**
-     * Exécute l'action d'une route.
-     */
     private static function execute($action, $params) {
         if (is_callable($action)) {
             echo call_user_func_array($action, $params);
@@ -119,3 +115,4 @@ class Route {
     }
 }
 ?>
+
