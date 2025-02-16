@@ -364,3 +364,6 @@ $registerViewContent .= "            <button type='submit' class='btn btn-primar
     }
 }
 
+
+
+
