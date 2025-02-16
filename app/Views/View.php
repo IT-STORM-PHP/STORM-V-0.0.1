@@ -5,9 +5,9 @@ class View {
     /**
      * Render une vue avec des données optionnelles.
      */
-    public static function render($template, $data = []) {
-        extract($data);
-        include __DIR__ . "/$template.php"; 
+    public static function render($title, $template) {
+        /* extract($data); */
+        include __DIR__ . "base.php"; 
     }
 
     /**

@@ -1,11 +1,11 @@
 <?php
     putenv('ENV=test');
     return [
-        'db_host' => '127.0.0.1',
+        'db_host' => 'mysql-godwill05.alwaysdata.net',
         'db_port' => '3306',
-        'db_name' => 'storm_db',
-        'db_user' => 'root',
-        'db_pass' => '',
+        'db_name' => 'godwill05_storm',
+        'db_user' => 'godwill05',
+        'db_pass' => 'Godwill.2005',
         'errors_route_message' => "Impossible d'accéder à cette URL, car elle n'est pas définie. Définissez-la avec :",
     ];
 ?>
