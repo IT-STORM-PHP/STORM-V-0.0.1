@@ -458,7 +458,7 @@ class Kernel
         $modelLower = strtolower($model);
 
 
-        // Définition des routes en respectant la syntaxe existante
+        // Définition des routes pour le CRUD
         $routes = [
             "Route::get('/{$modelLower}', [{$controllerClass}::class, 'index']);",
             "Route::get('/{$modelLower}/create', [{$controllerClass}::class, 'create']);",

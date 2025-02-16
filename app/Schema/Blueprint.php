@@ -159,13 +159,12 @@ class Blueprint
     public function addTriggers(): string
     {
         return "
-            
-            CREATE TRIGGER `prevent_update_created_at`
+            CREATE TRIGGER IF NOT EXISTS `prevent_update_created_at`
             BEFORE UPDATE ON `{$this->table}`
             FOR EACH ROW
             BEGIN
                 SET NEW.created_at = OLD.created_at;
-            END;
+            END; 
         ";
     }
 
