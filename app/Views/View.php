@@ -5,9 +5,10 @@ class View {
     /**
      * Render une vue dynamique.
      */
-    public static function render($title, $template) {
-        /* extract($data); */
-        include __DIR__ . "base.php"; 
+    public static function render($path, $dt = []) {
+        extract($dt);
+        include __DIR__ . "/$path.php";
+        include __DIR__ . "/base.php"; 
     }
 
     /**

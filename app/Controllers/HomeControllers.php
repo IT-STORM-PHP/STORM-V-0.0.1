@@ -8,6 +8,6 @@ class HomeControllers extends Controller
 {
     public function index()
     {
-        return View::render('/home/index');
+        return View::render('/home/index', []);
     }
 }
