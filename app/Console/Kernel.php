@@ -13,6 +13,7 @@ class Kernel
         'serve' => 'serve',
         'make:migrations' => 'makeMigration',
         'migrate' => 'migrate',
+        'migrateTest' => 'migrateTest',
         'rollback' => 'rollback',
         'make:crud' => 'makeCrud',
         'make:controllers' => 'makeController',
@@ -88,7 +89,7 @@ class Kernel
         $content .= "        \$table->id();\n";
         $content .= "        \$table->string('name');\n";
         $content .= "        \$table->timestamps();\n";
-        $content .= "        \$this->executeSQL(\$table->getSQL());\n";
+        $content .= "        \$this->executeSQL(\$table->updateOrCreate());\n";
         $content .= "    }\n\n";
         $content .= "    public function down()\n    {\n";
         $content .= "        \$table = new Blueprint('table_name');\n";
@@ -149,6 +150,38 @@ class Kernel
         }
 
         echo "✅ Toutes les migrations exécutées.\n";
+    }
+
+    //Méthode pour lancer le migrate amélioré
+    protected function migrateTest(){
+        echo "🚀 Exécution des migrations...\n";
+
+        // Récupérer tous les fichiers de migration dans le dossier 'migrations'
+        $files = glob(__DIR__ . '/../../database/migrations/*.php');
+        sort($files); // Trie les fichiers de migration
+        foreach ($files as $file) {
+            $migrationName = pathinfo($file, PATHINFO_FILENAME);
+            require_once $file;
+
+            // Extraire le nom de la classe
+            $className = 'Database\\Migrations\\' . preg_replace('/^\d+_\d+_\d+_\d+_\d+_\d+_/', '', $migrationName);
+
+            if (class_exists($className)) {
+                $migration = new $className();
+                try {
+                    echo "🔧 Exécution de la migration : $className\n";
+                    $migration->up();
+                    
+                    echo "✅ Migration réussie : $className\n";
+                } catch (\Exception $e) {
+                    echo "❌ Erreur lors de l'exécution de la migration : " . $e->getMessage() . "\n";
+                }
+            } else {
+                echo "❌ Erreur : La classe '$className' n'existe pas dans le fichier '$file'.\n";
+            }
+
+        }
+
     }
 
     // Méthode pour vérifier si la table 'migrations' existe, sinon la créer
@@ -590,10 +623,11 @@ class Kernel
         echo "  serve             Démarrer le serveur local\n";
         echo "  make:migrations   Créer un fichier de migration\n";
         echo "  migrate           Exécuter les migrations\n";
+        echo "  migrateTest       Exécuter les migrations avec possibilité de mise à jour des tables (test) \n";
         echo "  rollback          Annuler la dernière migration\n";
         echo '  make:crud         Créer un modèle et un contrôleur CRUD pour une table existante' . "\n";
         echo '  make:controllers  Créer un contrôleur' . "\n";
         echo '  make:login        Créer un système de connexion avec une table existante' . "\n";
-        #echo '  make:model        Créer un modèle' . "\n";
+        echo '  make:model        Créer un modèle' . "\n";
     }
 }
