@@ -252,7 +252,7 @@ class Kernel
         // 3. Générer le modèle
         $modelContent = "<?php\n\nnamespace App\Models;\n\n";
         $modelContent .= "use PDO;\n";
-        $modelContent .= "use App\Models\Model;\n\n;date_default_timezone_set('GMT');\n\n";
+        $modelContent .= "use App\Models\Model;\n\ndate_default_timezone_set('GMT');\n\n";
         $modelContent .= "class {$model} extends Model\n{\n";
 
         // Ajouter l'attribut privé pour PDO
@@ -276,7 +276,7 @@ class Kernel
             if ($column['Field'] == 'created_at' || $column['Field'] == 'updated_at') {
                 $modelContent .= "       \$stmt->bindParam(':{$column['Field']}', date('Y-m-d H:i:s'));\n";
             }else{
-                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']));\n";
+                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']);\n";
             }
         }
         $modelContent .= "        return \$stmt->execute();\n";
@@ -301,16 +301,18 @@ class Kernel
         // Méthode Update
         $modelContent .= "\n    public function update(\$id, \$data)\n    {\n";
         $modelContent .= "        \$sql = \"UPDATE " . strtolower($model) . " SET ";
-        $modelContent .= implode(", ", array_map(fn($col) => "{$col['Field']} = :{$col['Field']}", $columns));
+        //filtrer les colonnes pour exclure la colonne created_at
+        $filteredColomns = array_filter($columns, fn($col) => $col['Field'] !== 'created_at');
+        $modelContent .= implode(", ", array_map(fn($col) => "{$col['Field']} = :{$col['Field']}", $filteredColomns));
         $modelContent .= " WHERE id = :id\";\n";
         $modelContent .= "        \$stmt = \$this->pdo->prepare(\$sql);\n";
         foreach ($columns as $column) {
             if ($column['Field'] == 'updated_at') {
                 $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', date('Y-m-d H:i:s'));\n";
-            }if ($column['Field'] == 'created_at') {
+            }elseif ($column['Field'] == 'created_at') {
                 continue;
             }else{
-                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']));\n";
+                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']);\n";
             }
         }
         $modelContent .= "        \$stmt->bindParam(':id', \$id);\n";

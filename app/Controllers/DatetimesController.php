@@ -36,7 +36,7 @@ class DatetimesController extends Controller
         // Logique pour enregistrer l'élément
         $data = [
             'id' => $this->request->get('id'),
-            'codArticle' => $this->request->get('codArticle'),
+            'codAricle' => $this->request->get('codAricle'),
             'nomArticle' => $this->request->get('nomArticle'),
             'created_at' => $this->request->get('created_at'),
             'updated_at' => $this->request->get('updated_at'),
@@ -55,7 +55,7 @@ class DatetimesController extends Controller
         // Logique pour mettre à jour l'élément
         $data = [
             'id' => $this->request->get('id'),
-            'codArticle' => $this->request->get('codArticle'),
+            'codAricle' => $this->request->get('codAricle'),
             'nomArticle' => $this->request->get('nomArticle'),
             'created_at' => $this->request->get('created_at'),
             'updated_at' => $this->request->get('updated_at'),

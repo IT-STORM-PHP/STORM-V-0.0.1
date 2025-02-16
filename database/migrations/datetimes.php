@@ -11,7 +11,7 @@ class Datetimes extends Migration
     {
         $table = new Blueprint('datetimes');
         $table->id();
-        $table->string('codArticle');
+        $table->string('codAricle');
         $table->string('nomArticle');
         $table->timestamps();
         $this->executeSQL($table->getSQL());
