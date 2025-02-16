@@ -3,11 +3,12 @@ namespace App\Views;
 
 class View {
     /**
-     * Render une vue avec des données optionnelles.
+     * Render une vue dynamique.
      */
-    public static function render($template, $data = []) {
-        extract($data);
-        include __DIR__ . "/$template.php"; 
+    public static function render($path, $dt = []) {
+        extract($dt);
+        include __DIR__ . "/$path.php";
+        include __DIR__ . "/base.php";//vue de base pour les pages
     }
 
     /**

@@ -84,14 +84,14 @@ class Kernel
         // Contenu de la migration
         $content = "<?php\n\nnamespace Database\Migrations;\n\nuse App\Schema\Blueprint;\nuse App\Database\Migration;\n\nclass {$classname} extends Migration\n{\n";
         $content .= "    public function up()\n    {\n";
-        $content .= "        \$table = new Blueprint('table_name');\n";
+        $content .= "        \$table = new Blueprint('$name');\n";
         $content .= "        \$table->id();\n";
         $content .= "        \$table->string('name');\n";
         $content .= "        \$table->timestamps();\n";
         $content .= "        \$this->executeSQL(\$table->getSQL());\n";
         $content .= "    }\n\n";
         $content .= "    public function down()\n    {\n";
-        $content .= "        \$table = new Blueprint('table_name');\n";
+        $content .= "        \$table = new Blueprint('$name');\n";
         $content .= "        \$this->executeSQL(\$table->dropSQL());\n";
         $content .= "    }\n}\n";
 
@@ -252,7 +252,7 @@ class Kernel
         // 3. Générer le modèle
         $modelContent = "<?php\n\nnamespace App\Models;\n\n";
         $modelContent .= "use PDO;\n";
-        $modelContent .= "use App\Models\Model;\n\n";
+        $modelContent .= "use App\Models\Model;\n\n;date_default_timezone_set('GMT');\n\n";
         $modelContent .= "class {$model} extends Model\n{\n";
 
         // Ajouter l'attribut privé pour PDO
@@ -273,7 +273,11 @@ class Kernel
         $modelContent .= "        \$sql = \"INSERT INTO " . strtolower($model) . " (" . implode(", ", array_column($columns, 'Field')) . ") VALUES (:" . implode(", :", array_column($columns, 'Field')) . ")\";\n";
         $modelContent .= "        \$stmt = \$this->pdo->prepare(\$sql);\n";
         foreach ($columns as $column) {
-            $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']);\n";
+            if ($column['Field'] == 'created_at' || $column['Field'] == 'updated_at') {
+                $modelContent .= "       \$stmt->bindParam(':{$column['Field']}', date('Y-m-d H:i:s'));\n";
+            }else{
+                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']));\n";
+            }
         }
         $modelContent .= "        return \$stmt->execute();\n";
         $modelContent .= "    }\n";
@@ -301,7 +305,13 @@ class Kernel
         $modelContent .= " WHERE id = :id\";\n";
         $modelContent .= "        \$stmt = \$this->pdo->prepare(\$sql);\n";
         foreach ($columns as $column) {
-            $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']);\n";
+            if ($column['Field'] == 'updated_at') {
+                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', date('Y-m-d H:i:s'));\n";
+            }if ($column['Field'] == 'created_at') {
+                continue;
+            }else{
+                $modelContent .= "        \$stmt->bindParam(':{$column['Field']}', \$data['{$column['Field']}']));\n";
+            }
         }
         $modelContent .= "        \$stmt->bindParam(':id', \$id);\n";
         $modelContent .= "        return \$stmt->execute();\n";
@@ -343,7 +353,7 @@ class Kernel
             return 'text';
         }
 
-        function readTemplate($path, $model = null)
+        /* function readTemplate($path, $model = null)
         {
             $content = file_get_contents(__DIR__ . "../../../public/{$path}.php");
 
@@ -357,10 +367,10 @@ class Kernel
 
 
         $htmlHeader = readTemplate('_header', $model);
-        $htmlFooter = readTemplate('_footer', $model);
+        $htmlFooter = readTemplate('_footer', $model); */
 
         // Vue Index
-        $listViewContent = "{$htmlHeader}\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table'>\n<thead class='table-light'><tr>";
+        $listViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table'>\n<thead class='table-light'><tr>";
 
         foreach ($columns as $column) {
             $listViewContent .= "<th>{$column['Field']}</th>";
@@ -375,11 +385,11 @@ class Kernel
         <form action='/{$modelLower}/delete/<?php echo \$item['id']; ?>' method='POST' class='d-inline'>
             <button type='submit' class='btn btn-danger btn-sm'>Delete</button>
         </form>
-        </td></tr>\n<?php endforeach; ?>\n</tbody></table>\n{$htmlFooter}";
+        </td></tr>\n<?php endforeach; ?>\n</tbody></table>\n<?php \$content = ob_get_clean();?>\n";
         file_put_contents("{$viewDir}/index.php", $listViewContent);
 
         // Vue Create
-        $createViewContent = "{$htmlHeader}\n<h1>Create {$model}</h1>\n<form method='POST' action='/{$modelLower}/store' class='mt-4'>\n";
+        $createViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<h1>Create {$model}</h1>\n<form method='POST' action='/{$modelLower}/store' class='mt-4'>\n";
         foreach ($columns as $column) {
             if (in_array($column['Field'], ['id', 'created_at', 'updated_at'])) continue;
             $inputType = getInputType($column['Type']);
@@ -391,11 +401,11 @@ class Kernel
             }
             $createViewContent .= "</div>";
         }
-        $createViewContent .= "<button type='submit' class='btn btn-success'>Create {$model}</button>\n</form>\n{$htmlFooter}";
+        $createViewContent .= "<button type='submit' class='btn btn-success'>Create {$model}</button>\n</form>\n<?php \$content = ob_get_clean();?>";
         file_put_contents("{$viewDir}/create.php", $createViewContent);
 
         // Vue Show
-        $showViewContent = "{$htmlHeader}\n<h1 class='mb-4'>Show {$model}</h1>\n";
+        $showViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<h1 class='mb-4'>Show {$model}</h1>\n";
         $showViewContent .= "<?php if (!empty(\$item)): ?>\n";
         $showViewContent .= "<div class='card mb-4'>\n<div class='card-body'>\n";
 
@@ -405,12 +415,12 @@ class Kernel
 
         $showViewContent .= "</div>\n</div>\n";
         $showViewContent .= "<?php else: ?>\n<p class='text-danger'>Aucune donnée trouvée.</p>\n<?php endif; ?>\n";
-        $showViewContent .= "<a href='/{$modelLower}' class='btn btn-secondary'>Back to List</a>\n{$htmlFooter}";
+        $showViewContent .= "<a href='/{$modelLower}' class='btn btn-secondary'>Back to List</a>\n\n\<?php \$content = ob_get_clean();?>";
 
         file_put_contents("{$viewDir}/show.php", $showViewContent);
 
         // Vue Edit
-        $editViewContent = "{$htmlHeader}\n<h1>Edit {$model}</h1>\n<form method='POST' action='/{$modelLower}/update/<?php echo \$item['id']; ?>' class='mt-4'>\n";
+        $editViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<h1>Edit {$model}</h1>\n<form method='POST' action='/{$modelLower}/update/<?php echo \$item['id']; ?>' class='mt-4'>\n";
         foreach ($columns as $column) {
             if (in_array($column['Field'], ['id', 'created_at', 'updated_at'])) continue;
             $inputType = getInputType($column['Type']);
@@ -425,11 +435,11 @@ class Kernel
             }
             $editViewContent .= "</div>";
         }
-        $editViewContent .= "<button type='submit' class='btn btn-primary'>Update {$model}</button>\n</form>\n{$htmlFooter}";
+        $editViewContent .= "<button type='submit' class='btn btn-primary'>Update {$model}</button>\n</form>\n<?php \$content = ob_get_clean();?>";
         file_put_contents("{$viewDir}/edit.php", $editViewContent);
 
         // Vue Delete
-        $deleteViewContent = "{$htmlHeader}\n<h1 class='text-danger'>Are you sure you want to delete this {$model}?</h1>\n<form method='POST' action='/{$modelLower}/delete/<?php echo \$item['id']; ?>'>\n<button type='submit' class='btn btn-danger'>Yes, Delete</button>\n<a href='/{$modelLower}' class='btn btn-secondary'>Cancel</a>\n</form>\n{$htmlFooter}";
+        $deleteViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<h1 class='text-danger'>Are you sure you want to delete this {$model}?</h1>\n<form method='POST' action='/{$modelLower}/delete/<?php echo \$item['id']; ?>'>\n<button type='submit' class='btn btn-danger'>Yes, Delete</button>\n<a href='/{$modelLower}' class='btn btn-secondary'>Cancel</a>\n</form>\n<?php \$content = ob_get_clean();?>";
         file_put_contents("{$viewDir}/delete.php", $deleteViewContent);
     }
 
