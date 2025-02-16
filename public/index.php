@@ -6,6 +6,7 @@
     require_once __DIR__ . '/../routes/web.php';
     
     use App\Routes\Route;
-    
+    use App\Middleware\SessionMiddleware;
+    SessionMiddleware::start();
     Route::dispatch();
 ?>
