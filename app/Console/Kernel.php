@@ -38,7 +38,7 @@ class Kernel
     public function makeLogin()
     {
         $makeLogin = new MakeLogin();
-        $makeLogin->execute();
+        $makeLogin->run();
     }
     public function makeModel()
     {
@@ -343,13 +343,21 @@ class Kernel
             return 'text';
         }
 
-        function readTemplate($path)
+        function readTemplate($path, $model = null)
         {
-            return file_get_contents(__DIR__ . "../../../public/{$path}.php");
+            $content = file_get_contents(__DIR__ . "../../../public/{$path}.php");
+
+            
+            if ($model !== null) {
+                $content = str_replace('{$model}', $model, $content);
+            }
+
+            return $content;
         }
 
-        $htmlHeader = readTemplate('_header');
-        $htmlFooter = readTemplate('_footer');
+
+        $htmlHeader = readTemplate('_header', $model);
+        $htmlFooter = readTemplate('_footer', $model);
 
         // Vue Index
         $listViewContent = "{$htmlHeader}\n<h1 class='mb-4'>{$model} List</h1>\n<a href='/{$modelLower}/create' class='btn btn-primary mb-3'>Create {$model}</a>\n<table class='table'>\n<thead class='table-light'><tr>";
@@ -585,7 +593,7 @@ class Kernel
         echo "  rollback          Annuler la dernière migration\n";
         echo '  make:crud         Créer un modèle et un contrôleur CRUD pour une table existante' . "\n";
         echo '  make:controllers  Créer un contrôleur' . "\n";
-        echo '  make:login        Créer un système de connexion' . "\n";
-        echo '  make:model        Créer un modèle' . "\n";
+        echo '  make:login        Créer un système de connexion avec une table existante' . "\n";
+        #echo '  make:model        Créer un modèle' . "\n";
     }
 }

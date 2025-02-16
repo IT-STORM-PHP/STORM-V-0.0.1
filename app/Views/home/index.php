@@ -6,61 +6,9 @@
     <title>Bienvenue sur STORM</title>
     <!-- Inclusion de Bootstrap 5 -->
     <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/index.css">
     <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: 'Arial', sans-serif;
-        }
-        .main-header {
-            background-color: #004F71; /* 0xFF004F71 en hexadécimal */
-            color: white;
-            padding: 60px 0;
-        }
-        .main-header h1 {
-            font-size: 3rem;
-        }
-        .card {
-            border-radius: 15px;
-            position: relative;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        .card .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #b0b0b0; /* Couleur gris clair */
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: none;
-            border: none;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
-        }
-        .card:hover .copy-btn {
-            display: block;
-            opacity: 1;
-        }
-        .card:hover .copy-btn:hover {
-            background-color: #a0a0a0; /* Couleur légèrement plus foncée au survol */
-        }
-        .commands .card-body {
-            font-size: 1.1rem;
-        }
-        .cli-command {
-            color: #004F71; /* Commandes en bleu */
-            font-weight: bold;
-        }
-        h3 ,#h2{
-            color: #004F71; 
-            font-weight: bold;
-        }
+        
     </style>
 </head>
 <body>
@@ -115,7 +63,7 @@
                         <p class="card-text">Pour lancer le serveur sur un port et une adresse spécifique, utilisez <span class="cli-command">php storm serve <strong>--host=[@IP]</strong> <strong>--port=[numPort]</strong></span>.</p>
                         <a href="#" class="btn btn-primary">En savoir plus</a>
                     </div>
-                    <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
+                    <button class="copy-btn" data-clipboard-text="php storm serve --host=[@IP] --port=[numPort]">Copier</button>
                 </div>
             </div>
             <div class="col-md-4">
@@ -125,20 +73,32 @@
                         <p class="card-text">La commande <span class="cli-command">php storm rollback</span> annule la dernière migration effectuée.</p>
                         <a href="#" class="btn btn-primary">En savoir plus</a>
                     </div>
-                    <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
+                    <button class="copy-btn" data-clipboard-text="php storm rollback">Copier</button>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Créer un nouveau contrôlleur</h5>
+                        <h5 class="card-title">Créer un nouveau contrôleur</h5>
                         <p class="card-text">Utilisez la commande <span class="cli-command">php storm make:controllers <strong>nom_controller</strong></span>.</p>
                         <a href="#" class="btn btn-primary">En savoir plus</a>
                     </div>
-                    <button class="copy-btn" data-clipboard-text="php storm make:migrations nom_table">Copier</button>
+                    <button class="copy-btn" data-clipboard-text="php storm make:controllers nom_controller">Copier</button>
+                </div>
+            </div>
+            <!-- Ajout de la nouvelle carte pour l'authentification -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Créer un système d'authentification</h5>
+                        <p class="card-text">Pour créer un système d'authentification, utilisez la commande <span class="cli-command">php storm make:login</span> et suivez les instructions dans le terminal.</p>
+                        <a href="#" class="btn btn-primary">En savoir plus</a>
+                    </div>
+                    <button class="copy-btn" data-clipboard-text="php storm make:login">Copier</button>
                 </div>
             </div>
         </div>
+        
     </section>
 
     <!-- Section d'information -->
@@ -155,7 +115,6 @@
     </div>
 </section>
 
-
     <!-- Footer -->
     <footer class="text-center py-4" style="background-color: #004F71; color: white;">
         <p>&copy; 2025 STORM. Tous droits réservés.</p>
@@ -163,20 +122,6 @@
 
     <!-- Inclusion de Bootstrap JS -->
     <script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Copier dans le presse-papier
-        document.querySelectorAll('.copy-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const text = button.getAttribute('data-clipboard-text');
-                
-                // Utilisation de l'API Clipboard pour copier
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('Commande copiée : ' + text);
-                }).catch(err => {
-                    alert('Échec de la copie : ' + err);
-                });
-            });
-        });
-    </script>
+    <script src="/assets/js/clipboard.js" ></script>
 </body>
 </html>

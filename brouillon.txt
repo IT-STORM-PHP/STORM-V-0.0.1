@@ -164,8 +164,9 @@ $controllerAttributes
     private \$model;
     private \$request;
     
-    public function __construct(){
-    \$this->model = new " . ucfirst($table) . "();
+    public function __construct()
+    {
+        \$this->model = new " . ucfirst($table) . "();
         \$this->request = new Request();
 $controllerAssignments
     }
@@ -213,16 +214,13 @@ $controllerAssignments
         if (\$user) {
             session_start();
             \$_SESSION['user'] = \$user;
-            echo 'Enregistrement effectué avec succès';
+            echo 'Enregistrement effectué avec succès;
         } else {
             echo 'Erreur lors de l\'enregistrement.';
         }
     }
 }
-";      //Génération du fichiers de login
-
-
-        
+";
 
         $controllerDir = __DIR__ . "/../../Controllers/Login/";
         if (!is_dir($controllerDir)) {
@@ -231,77 +229,5 @@ $controllerAssignments
 
         file_put_contents($controllerDir . "LoginController.php", $controllerContent);
         echo "\033[32mContrôleur généré : $controllerDir" . "LoginController.php\033[0m\n";
-
-        // Ajout des routes dans web.php
-$webPath = __DIR__ . "/../../../routes/web.php";
-$webContent = file_get_contents($webPath);
-
-// Ajout des imports à la fin du fichier
-if (strpos($webContent, 'use App\\Controllers\\Login\\LoginController;') === false) {
-    $webContent .= "\nuse App\\Controllers\\Login\\LoginController;";
-}
-
-// Ajout des routes si elles n'existent pas déjà
-if (strpos($webContent, 'Route::post(\'/login\', [LoginController::class, \'login\']);') === false) {
-    $webContent .= "\nRoute::post('/login', [LoginController::class, 'login']);";
-}
-
-if (strpos($webContent, 'Route::post(\'/register\', [LoginController::class, \'register\']);') === false) {
-    $webContent .= "\nRoute::post('/register', [LoginController::class, 'register']);";
-}
-
-file_put_contents($webPath, $webContent);
-echo "\033[32mRoutes ajoutées dans : $webPath\033[0m\n";
-
-    // Générer la vue pour la connexion
-$loginViewContent = "<?php\n
-\$_SESSION['errors'] = [];\n
-?>\n
-<form action='/login' method='post'>\n
-    <div class='form-group'>\n
-        <label for='login'>Identifiant</label>\n
-        <input type='text' name='login' class='form-control' id='login' required>\n
-    </div>\n
-    <div class='form-group'>\n
-        <label for='password'>Mot de passe</label>\n
-        <input type='password' name='password' class='form-control' id='password' required>\n
-    </div>\n
-    <button type='submit' class='btn btn-primary'>Se connecter</button>\n
-</form>";
-
-$registerViewContent = "<?php\n
-\$_SESSION['errors'] = [];\n
-?>\n
-<form action='/register' method='post'>\n
-    <div class='form-group'>\n
-        <label for='login'>Identifiant</label>\n
-        <input type='text' name='login' class='form-control' id='login' required>\n
-    </div>\n
-    <div class='form-group'>\n
-        <label for='password'>Mot de passe</label>\n
-        <input type='password' name='password' class='form-control' id='password' required>\n
-    </div>\n
-    <div class='form-group'>\n
-        <label for='confirm_password'>Confirmer le mot de passe</label>\n
-        <input type='password' name='confirm_password' class='form-control' id='confirm_password' required>\n
-    </div>\n
-    <button type='submit' class='btn btn-primary'>S'inscrire</button>\n
-</form>";
-
-// Répertoire pour les vues
-$viewsDir = __DIR__ . "/../../Views/sessions/";
-
-// Créer le répertoire si nécessaire
-if (!is_dir($viewsDir)) {
-mkdir($viewsDir, 0777, true);
-}
-
-// Générer les fichiers de vue
-file_put_contents($viewsDir . "login.php", $loginViewContent);
-file_put_contents($viewsDir . "register.php", $registerViewContent);
-
-echo "\033[32mVues générées dans : $viewsDir\033[0m\n";
-
-
     }
 }
