@@ -157,7 +157,7 @@ namespace App\\Controllers\\Login;
 use App\\Models\\Login\\" . ucfirst($table) . ";
 use App\\Controllers\\Controller;
 use App\\Http\\Request;
-
+use App\\Views\\View;
 class LoginController extends Controller
 {
 $controllerAttributes
@@ -168,6 +168,13 @@ $controllerAttributes
     \$this->model = new " . ucfirst($table) . "();
         \$this->request = new Request();
 $controllerAssignments
+    }
+
+    public function loginpage(){
+        return View::render('sessions/login');
+    }
+    public function registerpage(){
+        return View::render('sessions/register');
     }
 
     public function login()
@@ -182,7 +189,7 @@ $controllerAssignments
         \$user = \$this->model->login(\$this->$loginField, \$this->$passwordField);
         
         if (\$user) {
-            session_start();
+            
             \$_SESSION['user'] = \$user;
             echo \"Bienvenue \" . \$user['$loginField'];
         } else {
@@ -211,18 +218,26 @@ $controllerAssignments
         \$user = \$this->model->register(\$data);
         
         if (\$user) {
-            session_start();
+            
             \$_SESSION['user'] = \$user;
-            echo 'Enregistrement effectué avec succès';
+
+            echo '<div class=\"alert alert-success\" role=\"alert\">
+                    Enregistrement effectué avec succès. Veillez vous connecter.
+                    </div>
+                ';
+            return View::redirect('/login/page');
         } else {
-            echo 'Erreur lors de l\'enregistrement.';
+             echo '<div class=\"alert alert-danger\" role=\"alert\">
+                    Erreur lors de l\'enregistrement.
+                    </div>
+                ';
         }
     }
 }
 ";      //Génération du fichiers de login
 
 
-        
+
 
         $controllerDir = __DIR__ . "/../../Controllers/Login/";
         if (!is_dir($controllerDir)) {
@@ -233,75 +248,118 @@ $controllerAssignments
         echo "\033[32mContrôleur généré : $controllerDir" . "LoginController.php\033[0m\n";
 
         // Ajout des routes dans web.php
-$webPath = __DIR__ . "/../../../routes/web.php";
-$webContent = file_get_contents($webPath);
+        $webPath = __DIR__ . "/../../../routes/web.php";
+        $webContent = file_get_contents($webPath);
 
-// Ajout des imports à la fin du fichier
-if (strpos($webContent, 'use App\\Controllers\\Login\\LoginController;') === false) {
-    $webContent .= "\nuse App\\Controllers\\Login\\LoginController;";
+        // Ajout des imports à la fin du fichier
+        if (strpos($webContent, 'use App\\Controllers\\Login\\LoginController;') === false) {
+            $webContent .= "\nuse App\\Controllers\\Login\\LoginController;";
+        }
+
+        // Ajout des routes si elles n'existent pas déjà
+        if (strpos($webContent, 'Route::post(\'/login\', [LoginController::class, \'login\']);') === false) {
+            $webContent .= "\nRoute::post('/login', [LoginController::class, 'login']);";
+        }
+
+        if (strpos($webContent, 'Route::post(\'/register\', [LoginController::class, \'register\']);') === false) {
+            $webContent .= "\nRoute::post('/register', [LoginController::class, 'register']);";
+        }
+
+        if (strpos($webContent, 'Route::get(\'/register/page\', [LoginController::class, \'registerpage\']);') === false) {
+            $webContent .= "\nRoute::get('/register/page', [LoginController::class, 'registerpage']);";
+        }
+        if (strpos($webContent, 'Route::get(\'/login/page\', [LoginController::class, \'loginpage\']);') === false) {
+            $webContent .= "\nRoute::get('/login/page', [LoginController::class, 'loginpage']);";
+        }
+
+        file_put_contents($webPath, $webContent);
+        echo "\033[32mRoutes ajoutées dans : $webPath\033[0m\n";
+
+        // Générer la vue pour la connexion
+        function readTemplate($path, $model = null)
+        {
+            $content = file_get_contents(__DIR__ . "../../../../public/{$path}.php");
+
+            
+            if ($model !== null) {
+                $content = str_replace('{$model}', $model, $content);
+            }
+
+            return $content;
+        }
+        $htmlHeader = readTemplate('_header', 'Authentification');
+        $htmlFooter = readTemplate('_footer', 'Authentification');
+
+        $loginFieldToUpper = ucfirst($loginField);
+        $loginViewContent = "<?php\n"
+    . "\$_SESSION['errors'] = [];\n"
+    . "?>\n"
+    . $htmlHeader
+    . "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
+    . "    <div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
+    . "        <div class='card-header bg-primary text-white text-center'>\n"
+    . "            <h4>Connexion</h4>\n"
+    . "        </div>\n"
+    . "        <div class='card-body'>\n"
+    . "            <form action='/login' method='post'>\n"
+    . "                <div class='mb-3'>\n"
+    . "                    <label for='$loginField' class='form-label'>$loginFieldToUpper</label>\n"
+    . "                    <input type='text' name='$loginField' class='form-control' id='$loginField' required>\n"
+    . "                </div>\n"
+    . "                <div class='mb-3'>\n"
+    . "                    <label for='$passwordField' class='form-label'>Mot de passe</label>\n"
+    . "                    <input type='password' name='$passwordField' class='form-control' id='$passwordField' required>\n"
+    . "                </div>\n"
+    . "                <button type='submit' class='btn btn-primary w-100 py-2'>Se connecter</button>\n"
+    . "            </form>\n"
+    . "        </div>\n"
+    . "    </div>\n"
+    . "</div>\n"
+    . $htmlFooter;
+
+        // Générer la vue pour l'inscription
+$registerViewContent = "<?php\n"
+. "\$_SESSION['errors'] = [];\n"
+. "?>\n"
+. $htmlHeader
+. "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
+. "<div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
+. "    <div class='card-header bg-primary text-white text-center'>\n"
+. "        <h4>Inscription</h4>\n"
+. "    </div>\n"
+. "    <div class='card-body'>\n"
+. "        <form action='/register' method='post'>\n";
+
+// Ajouter les champs du formulaire
+foreach ($columns as $col) {
+$field = $col['Field'];
+if (!in_array($field, $excludedFields)) {
+    $registerViewContent .= "            <div class='mb-3'>\n"
+        . "                <label for='$field' class='form-label'>$field</label>\n"
+        . "                <input type='text' name='$field' class='form-control' required>\n"
+        . "            </div>\n";
+}
 }
 
-// Ajout des routes si elles n'existent pas déjà
-if (strpos($webContent, 'Route::post(\'/login\', [LoginController::class, \'login\']);') === false) {
-    $webContent .= "\nRoute::post('/login', [LoginController::class, 'login']);";
-}
+$registerViewContent .= "            <button type='submit' class='btn btn-primary w-100 py-2'>S'inscrire</button>\n"
+. "        </form>\n"
+. "    </div>\n"
+. "</div>\n"
+. "</div>\n"
+. $htmlFooter;
 
-if (strpos($webContent, 'Route::post(\'/register\', [LoginController::class, \'register\']);') === false) {
-    $webContent .= "\nRoute::post('/register', [LoginController::class, 'register']);";
-}
+        // Répertoire pour les vues
+        $viewsDir = __DIR__ . "/../../Views/sessions/";
 
-file_put_contents($webPath, $webContent);
-echo "\033[32mRoutes ajoutées dans : $webPath\033[0m\n";
+        // Créer le répertoire si nécessaire
+        if (!is_dir($viewsDir)) {
+            mkdir($viewsDir, 0777, true);
+        }
 
-    // Générer la vue pour la connexion
-$loginViewContent = "<?php\n
-\$_SESSION['errors'] = [];\n
-?>\n
-<form action='/login' method='post'>\n
-    <div class='form-group'>\n
-        <label for='login'>Identifiant</label>\n
-        <input type='text' name='login' class='form-control' id='login' required>\n
-    </div>\n
-    <div class='form-group'>\n
-        <label for='password'>Mot de passe</label>\n
-        <input type='password' name='password' class='form-control' id='password' required>\n
-    </div>\n
-    <button type='submit' class='btn btn-primary'>Se connecter</button>\n
-</form>";
+        // Générer les fichiers de vue
+        file_put_contents($viewsDir . "login.php", $loginViewContent);
+        file_put_contents($viewsDir . "register.php", $registerViewContent);
 
-$registerViewContent = "<?php\n
-\$_SESSION['errors'] = [];\n
-?>\n
-<form action='/register' method='post'>\n
-    <div class='form-group'>\n
-        <label for='login'>Identifiant</label>\n
-        <input type='text' name='login' class='form-control' id='login' required>\n
-    </div>\n
-    <div class='form-group'>\n
-        <label for='password'>Mot de passe</label>\n
-        <input type='password' name='password' class='form-control' id='password' required>\n
-    </div>\n
-    <div class='form-group'>\n
-        <label for='confirm_password'>Confirmer le mot de passe</label>\n
-        <input type='password' name='confirm_password' class='form-control' id='confirm_password' required>\n
-    </div>\n
-    <button type='submit' class='btn btn-primary'>S'inscrire</button>\n
-</form>";
-
-// Répertoire pour les vues
-$viewsDir = __DIR__ . "/../../Views/sessions/";
-
-// Créer le répertoire si nécessaire
-if (!is_dir($viewsDir)) {
-mkdir($viewsDir, 0777, true);
-}
-
-// Générer les fichiers de vue
-file_put_contents($viewsDir . "login.php", $loginViewContent);
-file_put_contents($viewsDir . "register.php", $registerViewContent);
-
-echo "\033[32mVues générées dans : $viewsDir\033[0m\n";
-
-
+        echo "\033[32mVues générées dans : $viewsDir\033[0m\n";
     }
 }
