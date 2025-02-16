@@ -38,16 +38,24 @@ abstract class Migration
 
     protected function executeSQL(string $sql)
     {
-        try {
-            $this->pdo->exec($sql);
-            echo "✅ Migration exécutée : " . $this->tableName . "\n";
-        } catch (\PDOException $e) {
-            // Vérifier si l'erreur est liée à une table déjà existante
-            if (strpos($e->getMessage(), '1050 Table') !== false && strpos($e->getMessage(), 'already exists') !== false) {
-                echo "⚠️ La table '{$this->tableName}' existe déjà, migration ignorée.\n";
-            } else {
-                // Afficher l'erreur pour les autres cas
-                echo "❌ Erreur de migration ({$this->tableName}) : " . $e->getMessage() . "\n";
+        echo($sql." ###\n");
+        // Vérifier si la requête SQL est null ou vide
+        if (empty($sql)) {
+            echo "ℹ️ Aucune modification n'a été effectuée";
+            // : la requête SQL est vide ou null.\n";
+            //return;  // On arrête l'exécution de la méthode si la requête est invalide
+        } else{
+            try {
+                $this->pdo->exec($sql);
+                echo "✅ Migration exécutée : " . $this->tableName . "\n";
+            } catch (\PDOException $e) {
+                // Vérifier si l'erreur est liée à une table déjà existante
+                if (strpos($e->getMessage(), '1050 Table') !== false && strpos($e->getMessage(), 'already exists') !== false) {
+                    echo "⚠️ La table '{$this->tableName}' existe déjà, migration ignorée.\n";
+                } else {
+                    // Afficher l'erreur pour les autres cas
+                    echo "❌ Erreur de migration ({$this->tableName}) : " . $e->getMessage() . "\n";
+                }
             }
         }
     }
