@@ -1,5 +1,5 @@
 {
-    "name": "IT-STORM-PHP/storm",
+    "name": "it-storm-php/storm",
     "description": "Description de ton projet",
     "type": "project",
     "autoload": {
