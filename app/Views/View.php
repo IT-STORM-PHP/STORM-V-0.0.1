@@ -3,7 +3,7 @@ namespace App\Views;
 
 class View {
     /**
-     * Render une vue avec des données optionnelles.
+     * Render une vue dynamique.
      */
     public static function render($title, $template) {
         /* extract($data); */
