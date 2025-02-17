@@ -30,8 +30,11 @@ class Route {
         self::$middlewares[$uri][] = $middleware;
     }
 
-    public static function beforeMiddleware(string $prefix, callable $callback) {
-        self::$beforeMiddlewares[$prefix][] = $callback;
+    public static function beforeMiddleware(array|string $prefixes, callable $callback) {
+        $prefixes = is_array($prefixes) ? $prefixes : [$prefixes];
+        foreach ($prefixes as $prefix) {
+            self::$beforeMiddlewares[$prefix][] = $callback;
+        }
     }
 
     public static function dispatch() {
@@ -40,7 +43,7 @@ class Route {
         $foundRoute = false;
 
         foreach (self::$beforeMiddlewares as $prefix => $callbacks) {
-            if (strpos($uri, $prefix) === 0) {
+            if (self::matchPrefix($uri, $prefix)) {
                 foreach ($callbacks as $callback) {
                     call_user_func($callback);
                 }
@@ -69,6 +72,10 @@ class Route {
         http_response_code(404);
         echo "404 - Page introuvable";
         exit();
+    }
+
+    private static function matchPrefix(string $uri, string $prefix): bool {
+        return strpos($uri, $prefix) === 0;
     }
 
     private static function handleRoute($route, $action, $params) {
@@ -114,5 +121,3 @@ class Route {
         }
     }
 }
-?>
-
