@@ -16,7 +16,7 @@ class Users extends Model
 
     public function login($login, $password)
     {
-        $sql = "SELECT * FROM users WHERE email = :login";
+        $sql = "SELECT * FROM users WHERE username = :login";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':login', $login);
         $stmt->execute();
@@ -43,7 +43,7 @@ class Users extends Model
             $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
 
-        $sql = "INSERT INTO users (email, password, nom, prenom, role) VALUES (:email, :password, :nom, :prenom, :role)";
+        $sql = "INSERT INTO users (username, nom, prenom, email, password) VALUES (:username, :nom, :prenom, :email, :password)";
         $stmt = $this->pdo->prepare($sql);
         foreach ($data as $key => $value) {
             $stmt->bindValue(':' . $key, $value);
