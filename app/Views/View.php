@@ -14,17 +14,17 @@ class View {
     /**
      * Render une vue avec un layout
      */
-    public static function renderWithLayout($layout, $template, $data = []) {
+    public static function renderWithLayout(string $layout, string $template, array $data = []): void {
         $content = self::getRenderedView($template, $data);
-        extract($data);
-        include __DIR__ . "/layouts/$layout.php"; 
+        extract($data, EXTR_SKIP);
+        include __DIR__ . "/layouts/$layout.php";
     }
 
     /**
      * Retourne le contenu d'une vue sous forme de string.
      */
-    private static function getRenderedView($template, $data = []) {
-        extract($data);
+    private static function getRenderedView(string $template, array $data = []): string {
+        extract($data, EXTR_SKIP);
         ob_start();
         include __DIR__ . "/$template.php";
         return ob_get_clean();
@@ -33,16 +33,16 @@ class View {
     /**
      * Redirige vers une URL.
      */
-    public static function redirect($url) {
-        header("Location: $url");
+    public static function redirect(string $url): void {
+        header("Location: " . filter_var($url, FILTER_SANITIZE_URL));
         exit();
     }
 
     /**
      * Retourne une réponse JSON.
      */
-    public static function jsonResponse($data, int $status = 200) {
-        header("Content-Type: application/json");
+    public static function jsonResponse(array $data, int $status = 200): void {
+        header("Content-Type: application/json; charset=UTF-8");
         http_response_code($status);
         echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         exit();
@@ -51,17 +51,17 @@ class View {
     /**
      * Définit un message flash en session.
      */
-    public static function setFlash($key, $message) {
-        if (!session_id()) session_start();
+    public static function setFlash(string $key, string $message): void {
+        if (session_status() === PHP_SESSION_NONE) session_start();
         $_SESSION['flash'][$key] = $message;
     }
 
     /**
      * Récupère un message flash et le supprime.
      */
-    public static function getFlash($key) {
-        if (!session_id()) session_start();
-        if (isset($_SESSION['flash'][$key])) {
+    public static function getFlash(string $key): ?string {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!empty($_SESSION['flash'][$key])) {
             $message = $_SESSION['flash'][$key];
             unset($_SESSION['flash'][$key]);
             return $message;
@@ -70,23 +70,23 @@ class View {
     }
 
     /**
-     * Définit un cookie.
+     * Définit un cookie sécurisé.
      */
-    public static function setCookie($name, $value, $expire = 3600, $path = "/", $secure = false, $httponly = true) {
+    public static function setCookie(string $name, string $value, int $expire = 3600, string $path = "/", bool $secure = false, bool $httponly = true): void {
         setcookie($name, $value, time() + $expire, $path, "", $secure, $httponly);
     }
 
     /**
      * Récupère un cookie.
      */
-    public static function getCookie($name) {
+    public static function getCookie(string $name): ?string {
         return $_COOKIE[$name] ?? null;
     }
 
     /**
      * Génère une page d'erreur HTTP.
      */
-    public static function renderErrorPage($code = 404, $message = "Page not found") {
+    public static function renderErrorPage(int $code = 404, string $message = "Page not found"): void {
         http_response_code($code);
         include __DIR__ . "/errors/{$code}.php";
         exit();
@@ -95,16 +95,14 @@ class View {
     /**
      * Génère un fichier pour téléchargement.
      */
-    public static function downloadFile($filePath, $fileName = null) {
+    public static function downloadFile(string $filePath, ?string $fileName = null): void {
         if (!file_exists($filePath)) {
             self::renderErrorPage(404, "Fichier non trouvé");
         }
-        if (!$fileName) {
-            $fileName = basename($filePath);
-        }
+        $fileName = $fileName ?: basename($filePath);
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Disposition: attachment; filename="' . basename($fileName) . '"');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
@@ -116,9 +114,9 @@ class View {
     /**
      * Paginate un tableau de données.
      */
-    public static function paginate(array $items, $page = 1, $perPage = 10) {
+    public static function paginate(array $items, int $page = 1, int $perPage = 10): array {
         $total = count($items);
-        $totalPages = ceil($total / $perPage);
+        $totalPages = (int) ceil($total / $perPage);
         $offset = ($page - 1) * $perPage;
         return [
             'data' => array_slice($items, $offset, $perPage),
@@ -131,4 +129,3 @@ class View {
         ];
     }
 }
-?>

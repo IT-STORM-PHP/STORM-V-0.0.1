@@ -3,3 +3,4 @@
     use App\Controllers\HomeControllers;
     
     Route::get('/', [HomeControllers::class, 'index']);
+ 
