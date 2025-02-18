@@ -276,7 +276,7 @@ $controllerAssignments
         echo "\033[32mRoutes ajoutées dans : $webPath\033[0m\n";
 
         // Générer la vue pour la connexion
-       /*  function readTemplate($path, $model = null)
+        /*  function readTemplate($path, $model = null)
         {
             $content = file_get_contents(__DIR__ . "../../../../public/{$path}.php");
 
@@ -292,76 +292,76 @@ $controllerAssignments
 
         $loginFieldToUpper = ucfirst($loginField);
         $loginViewContent = "<?php\n"
-    . "\$title = 'STORM - Login';"
-    . "\nob_start();\n"
-    . "\$_SESSION['errors'] = [];\n"
-    . "?>\n"
-    . "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
-    . "    <div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
-    . "        <div class='card-header bg-primary text-white text-center'>\n"
-    . "            <h4>Connexion</h4>\n"
-    . "        </div>\n"
-    . "        <div class='card-body'>\n"
-    . "            <form action='/login' method='post'>\n"
-    . "                <div class='mb-3'>\n"
-    . "                    <label for='$loginField' class='form-label'>$loginFieldToUpper</label>\n"
-    . "                    <input type='text' name='$loginField' class='form-control' id='$loginField' required>\n"
-    . "                </div>\n"
-    . "                <div class='mb-3'>\n"
-    . "                    <label for='$passwordField' class='form-label'>Mot de passe</label>\n"
-    . "                    <input type='password' name='$passwordField' class='form-control' id='$passwordField' required>\n"
-    . "                </div>\n"
-    . "                <button type='submit' class='btn btn-primary w-100 py-2'>Se connecter</button>\n"
-    . "            </form>\n"
-    . "            <p class='text-center mt-3'>Vous n'avez pas de compte ? <a href='/register/page'>Inscrivez-vous</a></p>\n"
-    . "        </div>\n"
-    . "    </div>\n"
-    . "</div>\n"
-    ."<?php\n\t\$content = ob_get_clean();\n?>";
+            . "\$title = 'STORM - Login';"
+            . "\nob_start();\n"
+            . "\$_SESSION['errors'] = [];\n"
+            . "?>\n"
+            . "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
+            . "    <div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
+            . "        <div class='card-header bg-primary text-white text-center'>\n"
+            . "            <h4>Connexion</h4>\n"
+            . "        </div>\n"
+            . "        <div class='card-body'>\n"
+            . "            <form action='/login' method='post'>\n"
+            . "                <div class='mb-3'>\n"
+            . "                    <label for='$loginField' class='form-label'>$loginFieldToUpper</label>\n"
+            . "                    <input type='text' name='$loginField' class='form-control' id='$loginField' required>\n"
+            . "                </div>\n"
+            . "                <div class='mb-3'>\n"
+            . "                    <label for='$passwordField' class='form-label'>Mot de passe</label>\n"
+            . "                    <input type='password' name='$passwordField' class='form-control' id='$passwordField' required>\n"
+            . "                </div>\n"
+            . "                <button type='submit' class='btn btn-primary w-100 py-2'>Se connecter</button>\n"
+            . "            </form>\n"
+            . "            <p class='text-center mt-3'>Vous n'avez pas de compte ? <a href='/register/page'>Inscrivez-vous</a></p>\n"
+            . "        </div>\n"
+            . "    </div>\n"
+            . "</div>\n"
+            . "<?php\n\t\$content = ob_get_clean();\n?>";
 
         // Générer la vue pour l'inscription
-$registerViewContent = "<?php\n"
-. "\$title = 'STORM - New User';"
-. "\nob_start();\n"
-. "\$_SESSION['errors'] = [];\n"
-. "?>\n"
-. "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
-. "<div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
-. "    <div class='card-header bg-primary text-white text-center'>\n"
-. "        <h4>Inscription</h4>\n"
-. "    </div>\n"
-. "    <div class='card-body'>\n"
-. "        <form action='/register' method='post'>\n";
+        $registerViewContent = "<?php\n"
+            . "\$title = 'STORM - New User';"
+            . "\nob_start();\n"
+            . "\$_SESSION['errors'] = [];\n"
+            . "?>\n"
+            . "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
+            . "<div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
+            . "    <div class='card-header bg-primary text-white text-center'>\n"
+            . "        <h4>Inscription</h4>\n"
+            . "    </div>\n"
+            . "    <div class='card-body'>\n"
+            . "        <form action='/register' method='post'>\n";
 
-// Ajouter les champs du formulaire
-foreach ($columns as $col) {
-    $field = $col['Field'];
-    if (!in_array($field, $excludedFields)) {
-        if ($field === $passwordField) {
-            $registerViewContent .= "            <div class='mb-3'>\n"
-                . "                <label for='$field' class='form-label'>$field</label>\n"
-                . "                <input type='password' name='$field' class='form-control' required>\n"
-                . "            </div>\n";
-            /* $registerViewContent .= "            <div class='mb-3'>\n"
+        // Ajouter les champs du formulaire
+        foreach ($columns as $col) {
+            $field = $col['Field'];
+            if (!in_array($field, $excludedFields)) {
+                if ($field === $passwordField) {
+                    $registerViewContent .= "            <div class='mb-3'>\n"
+                        . "                <label for='$field' class='form-label'>$field</label>\n"
+                        . "                <input type='password' name='$field' class='form-control' required>\n"
+                        . "            </div>\n";
+                    /* $registerViewContent .= "            <div class='mb-3'>\n"
                 . "                <label for='$field' class='form-label'>Confirmer le mot de passe</label>\n"
                 . "                <input type='password' name='confirm_$field' class='form-control' required>\n"
                 . "            </div>\n"; */
-        }else{
-            $registerViewContent .= "            <div class='mb-3'>\n"
-                . "                <label for='$field' class='form-label'>$field</label>\n"
-                . "                <input type='text' name='$field' class='form-control' required>\n"
-                . "            </div>\n";
+                } else {
+                    $registerViewContent .= "            <div class='mb-3'>\n"
+                        . "                <label for='$field' class='form-label'>$field</label>\n"
+                        . "                <input type='text' name='$field' class='form-control' required>\n"
+                        . "            </div>\n";
+                }
+            }
         }
-    }
-}
 
-$registerViewContent .= "            <button type='submit' class='btn btn-primary w-100 py-2'>S'inscrire</button>\n"
-. "        </form>\n"
-. "        <p class='text-center mt-3'>Vous avez déjà un compte ? <a href='/login/page'>Connectez-vous</a></p>\n"
-. "    </div>\n"
-. "</div>\n"
-. "</div>\n"
-. "<?php\n\t\$content = ob_get_clean();\n?>";
+        $registerViewContent .= "            <button type='submit' class='btn btn-primary w-100 py-2'>S'inscrire</button>\n"
+            . "        </form>\n"
+            . "        <p class='text-center mt-3'>Vous avez déjà un compte ? <a href='/login/page'>Connectez-vous</a></p>\n"
+            . "    </div>\n"
+            . "</div>\n"
+            . "</div>\n"
+            . "<?php\n\t\$content = ob_get_clean();\n?>";
 
         // Répertoire pour les vues
         $viewsDir = __DIR__ . "/../../Views/sessions/";
@@ -378,7 +378,3 @@ $registerViewContent .= "            <button type='submit' class='btn btn-primar
         echo "\033[32mVues générées dans : $viewsDir\033[0m\n";
     }
 }
-
-
-
-

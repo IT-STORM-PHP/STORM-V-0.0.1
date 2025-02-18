@@ -206,32 +206,29 @@ class Blueprint
     {
         // Vérifier si la table existe
         $query = "SHOW TABLES LIKE '" . $this->table . "';";
-
+    
         if (!$this->executeQuery($query)->fetch()) {
             // Si la table n'existe pas, la créer
             return $this->getSQL();
         }
-
+    
         // Récupérer les colonnes existantes
         $query = "SHOW COLUMNS FROM `{$this->table}`";
         $existingColumns = [];
         $result = $this->executeQuery($query);
-
+    
         while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $existingColumns[$row['Field']] = $row;
         }
-
+    
         // Variable pour garder une trace de la dernière colonne ajoutée
         $lastAddedColumn = null;
-
+    
         // Générer les modifications nécessaires
         foreach ($this->columns as $column => $definition) {
-            //echo($column . " : " . $this->extractType($definition) . "\n" . json_encode($existingColumns[$column]) . "\n" . strtoupper($existingColumns[$column]["Type"]) . "\n");
             // Vérifier si la colonne existe déjà
             if (!isset($existingColumns[$column])) {
                 // Nouvelle colonne
-                //$this->addColumn($column, $this->extractType($definition));
-                // Nouvelle colonne : si après la précédente colonne ajoutée
                 if ($lastAddedColumn) {
                     // Ajouter la colonne après la dernière colonne ajoutée
                     $this->addColumnAfter($column, $this->extractType($definition), $lastAddedColumn);
@@ -239,63 +236,58 @@ class Blueprint
                     // Sinon, ajouter la colonne à la fin de la table
                     $this->addColumn($column, $this->extractType($definition));
                 }
-
+    
             } elseif (isset($this->columns[$column]) && strtoupper($existingColumns[$column]['Type']) === $this->extractType($definition)) {
                 // Si la colonne existe et avec le type parfaitement identique, passer au suivant
-                //echo(($this->columns[$column]) . " 1### " . strtoupper($existingColumns[$column]['Type']) . " 2### " . $this->extractType($definition)."###\n\n" );
             } elseif (strtoupper($existingColumns[$column]['Type']) !== $this->extractType($definition)) {
                 // Si la colonne existe mais avec un type différent
                 echo "La colonne '$column' existe déjà avec un type différent.\n";
                 echo "Souhaitez-vous :\n";
                 echo "\t 0. La modifier directement\n";
                 echo "\t 1. La supprimer et la recréer\n";
-        
+    
                 // Boucle pour garantir un choix valide (0 ou 1)
                 $choice = null;
-                while ($choice !== '0' || $choice !== '1' || $choice !== '') {        
-                    //Par defaut 0
-                    $choice = '0';
+                while ($choice !== '0' && $choice !== '1') {
                     // Demander le choix
-                    echo "Entrez le numéro de votre choix (par defaut 0) : ";
+                    echo "Entrez le numéro de votre choix (par défaut 0) : ";
                     $choice = trim(fgets(STDIN));
-                    
+    
                     // Vérifier si le choix est valide
                     if ($choice === '1') {
                         echo "Suppression de la colonne '$column'...\n";
                         $this->dropColumn($column); // Supprimer la colonne
-                        //$this->addColumn($column, $this->extractType($definition)); // Recréer la colonne
                         // Recréer la colonne (avec ou sans 'after' selon la définition)
                         if ($lastAddedColumn) {
-                            // Ajouter après la dernière colonne modifiée
                             $this->addColumnAfter($column, $this->extractType($definition), $lastAddedColumn);
                         } else {
-                            // Ajouter à la fin si pas d'autres colonnes
                             $this->addColumn($column, $this->extractType($definition));
                         }
                         break;
                     } elseif ($choice === '0' || $choice === '') {
                         echo "Modification du type de la colonne '$column'...\n";
-                        $this->modifyColumn($column, $this->extractType($definition), $lastAddedColumn ); // Modifier la colonne
+                        $this->modifyColumn($column, $this->extractType($definition), $lastAddedColumn); // Modifier la colonne
                         break;
                     } else {
                         echo "Choix invalide. Veuillez entrer 0 ou 1.\n";
                     }
-
                 }
             }
-            
+    
             // Mettre à jour la dernière colonne modifiée ou ajoutée
             $lastAddedColumn = $column;
         }
-        
+    
         // Supprimer les colonnes qui ne sont plus définies
         foreach ($existingColumns as $column => $data) {
             if (!isset($this->columns[$column])) {
-                $test = ($this->dropColumn($column));
+                $this->dropColumn($column);
             }
         }
+    
         return $this->getAlterSQL();
     }
+    
 
     // Extraire uniquement le type de colonne pour la comparaison
     private function extractType(string $definition): string
