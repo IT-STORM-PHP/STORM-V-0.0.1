@@ -30,12 +30,29 @@ class Route {
         self::$middlewares[$uri][] = $middleware;
     }
 
-    public static function beforeMiddleware(array|string $prefixes, callable $callback) {
-        $prefixes = is_array($prefixes) ? $prefixes : [$prefixes];
-        foreach ($prefixes as $prefix) {
-            self::$beforeMiddlewares[$prefix][] = $callback;
+public static function beforeMiddleware(array|string $prefixes, callable $callback) {
+    // Vérifier si le callback est une méthode non statique
+    if (is_array($callback) && is_object($callback[0])) {
+        $object = $callback[0]; // L'objet de la méthode
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException("Le callback n'est pas valide.");
         }
     }
+    
+    // Assurer que l'objet de la méthode est instancié si ce n'est pas déjà fait
+    if (is_array($callback) && is_string($callback[0]) && !is_object($callback[0])) {
+        $controllerName = $callback[0];
+        $controller = new $controllerName();
+        $callback[0] = $controller;
+    }
+
+    $prefixes = is_array($prefixes) ? $prefixes : [$prefixes];
+    foreach ($prefixes as $prefix) {
+        self::$beforeMiddlewares[$prefix][] = $callback;
+    }
+}
+
+
 
     public static function dispatch() {
         $method = $_SERVER['REQUEST_METHOD'];

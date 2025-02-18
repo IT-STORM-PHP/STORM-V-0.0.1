@@ -2,12 +2,16 @@
 
 namespace App\Controllers;
 
-use App\Controller\Controllers;
+
 use App\Views\View;
+
 class HomeControllers extends Controller
 {
-    public function index()
+        public function index()
     {
+        // Rendu de la vue via View::render (simplification de l'usage)
         return View::render('/home/index', []);
     }
+
+       
 }

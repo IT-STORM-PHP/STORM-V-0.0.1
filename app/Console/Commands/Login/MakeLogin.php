@@ -1,13 +1,21 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Login;
 
 use App\Models\Database;
 use PDO;
-
+use App\Console\Commands\Login\MakeDashboard;
+use App\Console\Commands\Login\MakeDashboardController;
 class MakeLogin
 {
-    public static function run()
+    private $makeDashboard, $makeDashboardController;
+
+    public function __construct()
+    {
+        $this->makeDashboard = new MakeDashboard();
+        $this->makeDashboardController = new MakeDashboardController();
+    }
+    public function run()
     {
         echo "\033[32mQuelle table voulez-vous utiliser pour l'authentification ? \033[0m";
         $table = trim(fgets(STDIN));
@@ -130,7 +138,7 @@ class " . ucfirst($table) . " extends Model
     }
 }";
 
-        $modelDir = __DIR__ . "/../../Models/Login/";
+        $modelDir = __DIR__ . "/../../../Models/Login/";
         if (!is_dir($modelDir)) {
             mkdir($modelDir, 0777, true);
         }
@@ -191,7 +199,7 @@ $controllerAssignments
         if (\$user) {
             
             \$_SESSION['user'] = \$user;
-            echo \"Bienvenue \" . \$user['$loginField'];
+            return View::redirect('/dashboard');
         } else {
             echo 'Identifiants incorrects';
         }
@@ -233,13 +241,21 @@ $controllerAssignments
                 ';
         }
     }
+        public function dashboard(){
+            return View::render('dash/dashboard');
+    }
 }
-";      //Génération du fichiers de login
+";      
+
+        //Génération du contrôleur pour le dashboard
+        $this->makeDashboardController->makeDashboardController();
+
+    //Génération du fichiers de login
 
 
 
 
-        $controllerDir = __DIR__ . "/../../Controllers/Login/";
+        $controllerDir = __DIR__ . "/../../../Controllers/Login/";
         if (!is_dir($controllerDir)) {
             mkdir($controllerDir, 0777, true);
         }
@@ -248,12 +264,13 @@ $controllerAssignments
         echo "\033[32mContrôleur généré : $controllerDir" . "LoginController.php\033[0m\n";
 
         // Ajout des routes dans web.php
-        $webPath = __DIR__ . "/../../../routes/web.php";
+        $webPath = __DIR__ . "/../../../../routes/web.php";
         $webContent = file_get_contents($webPath);
 
         // Ajout des imports à la fin du fichier
         if (strpos($webContent, 'use App\\Controllers\\Login\\LoginController;') === false) {
             $webContent .= "\nuse App\\Controllers\\Login\\LoginController;";
+            $webContent .= "\nuse App\\Controllers\\Login\\DashboardController;";
         }
 
         // Ajout des routes si elles n'existent pas déjà
@@ -271,7 +288,16 @@ $controllerAssignments
         if (strpos($webContent, 'Route::get(\'/login/page\', [LoginController::class, \'loginpage\']);') === false) {
             $webContent .= "\nRoute::get('/login/page', [LoginController::class, 'loginpage']);";
         }
-
+        if (strpos($webContent, "Route::beforeMiddleware(['/dashboard', ], [new DashboardController(), 'isConnect'])") === false) {
+            $webContent .= "\nRoute::beforeMiddleware(['/dashboard', ], [new DashboardController(), 'isConnect']);";
+        }
+        if (strpos($webContent, 'Route::get(\'/dashboard\', [DashboardController::class, \'dashboard\']);') === false) {
+            $webContent .= "\nRoute::get('/dashboard', [DashboardController::class, 'dashboard']);";
+        } // Route pour la deconnexion
+        if (strpos($webContent, 'Route::get(\'/logout\', [DashboardController::class, \'logout\']);') === false) {
+            $webContent .= "\nRoute::get('/logout', [DashboardController::class, 'logout']);\n\n\n";
+        }
+        
         file_put_contents($webPath, $webContent);
         echo "\033[32mRoutes ajoutées dans : $webPath\033[0m\n";
 
@@ -298,7 +324,7 @@ $controllerAssignments
             . "?>\n"
             . "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
             . "    <div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
-            . "        <div class='card-header bg-primary text-white text-center'>\n"
+            . "        <div class='card-header bg-secondary text-white text-center'>\n"
             . "            <h4>Connexion</h4>\n"
             . "        </div>\n"
             . "        <div class='card-body'>\n"
@@ -311,9 +337,9 @@ $controllerAssignments
             . "                    <label for='$passwordField' class='form-label'>Mot de passe</label>\n"
             . "                    <input type='password' name='$passwordField' class='form-control' id='$passwordField' required>\n"
             . "                </div>\n"
-            . "                <button type='submit' class='btn btn-primary w-100 py-2'>Se connecter</button>\n"
+            . "                <button type='submit' class='btn btn-success w-100 py-2'>Se connecter</button>\n"
             . "            </form>\n"
-            . "            <p class='text-center mt-3'>Vous n'avez pas de compte ? <a href='/register/page'>Inscrivez-vous</a></p>\n"
+            . "            <p class='text-center mt-3'>Vous n'avez pas de compte ? <a href='/register/page' class='link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover'>Inscrivez-vous</a></p>\n"
             . "        </div>\n"
             . "    </div>\n"
             . "</div>\n"
@@ -327,7 +353,7 @@ $controllerAssignments
             . "?>\n"
             . "<div class='container d-flex justify-content-center align-items-center vh-100'>\n"
             . "<div class='card shadow-lg' style='max-width: 500px; width: 100%;'>\n"
-            . "    <div class='card-header bg-primary text-white text-center'>\n"
+            . "    <div class='card-header bg-secondary text-white text-center'>\n"
             . "        <h4>Inscription</h4>\n"
             . "    </div>\n"
             . "    <div class='card-body'>\n"
@@ -355,16 +381,16 @@ $controllerAssignments
             }
         }
 
-        $registerViewContent .= "            <button type='submit' class='btn btn-primary w-100 py-2'>S'inscrire</button>\n"
+        $registerViewContent .= "            <button type='submit' class='btn btn-success w-100 py-2'>S'inscrire</button>\n"
             . "        </form>\n"
-            . "        <p class='text-center mt-3'>Vous avez déjà un compte ? <a href='/login/page'>Connectez-vous</a></p>\n"
+            . "        <p class='text-center mt-3'>Vous avez déjà un compte ? <a href='/login/page' class='link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover'>Connectez-vous</a></p>\n"
             . "    </div>\n"
             . "</div>\n"
             . "</div>\n"
             . "<?php\n\t\$content = ob_get_clean();\n?>";
 
         // Répertoire pour les vues
-        $viewsDir = __DIR__ . "/../../Views/sessions/";
+        $viewsDir = __DIR__ . "/../../../Views/sessions/";
 
         // Créer le répertoire si nécessaire
         if (!is_dir($viewsDir)) {
@@ -374,6 +400,8 @@ $controllerAssignments
         // Générer les fichiers de vue
         file_put_contents($viewsDir . "login.php", $loginViewContent);
         file_put_contents($viewsDir . "register.php", $registerViewContent);
+        // Générer le dashboard
+        $this->makeDashboard->dashBoard();
 
         echo "\033[32mVues générées dans : $viewsDir\033[0m\n";
     }

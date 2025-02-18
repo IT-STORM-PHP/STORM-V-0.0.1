@@ -5,7 +5,7 @@ namespace App\Console;
 use App\Console\Commands\Crud\MakeCrud;
 use PDO;
 use App\Models\Database;
-use App\Console\Commands\MakeLogin;
+use App\Console\Commands\Login\MakeLogin;
 use App\Console\Commands\MakeMigration;
 use App\Console\Commands\Migrate;
 use App\Console\Commands\MakeController;

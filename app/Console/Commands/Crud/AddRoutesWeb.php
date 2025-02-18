@@ -8,7 +8,7 @@ class AddRoutesWeb
     {
         $webPath = __DIR__ . '/../../../../routes/web.php';
         $controllerClass = ucfirst($model) . 'Controller';
-        $namespaceLine = "use App\Controllers\\$controllerClass;";
+        $namespaceLine = "\n\nuse App\Controllers\\$controllerClass;";
 
         // Convertir $model en minuscule pour l'URL
         $modelLower = strtolower($model);
@@ -21,7 +21,7 @@ class AddRoutesWeb
             "Route::post('/{$modelLower}/store', [{$controllerClass}::class, 'store']);",
             "Route::get('/{$modelLower}/edit/{{$primaryKey}}', [{$controllerClass}::class, 'edit']);",
             "Route::post('/{$modelLower}/update/{{$primaryKey}}', [{$controllerClass}::class, 'update']);",
-            "Route::post('/{$modelLower}/delete/{{$primaryKey}}', [{$controllerClass}::class, 'destroy']);",
+            "Route::post('/{$modelLower}/delete/{{$primaryKey}}', [{$controllerClass}::class, 'destroy']);\n\n",
         ];
 
         // Lire le contenu actuel du fichier

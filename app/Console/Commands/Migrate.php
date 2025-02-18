@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Database;
-
 class Migrate
 {
     public function migrate()
