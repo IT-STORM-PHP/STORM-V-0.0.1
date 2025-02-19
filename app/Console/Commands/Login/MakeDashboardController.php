@@ -8,8 +8,9 @@ class MakeDashboardController
 
     public function makeDashboardController($name = 'DashboardController')
     {
+        $chemin_dossier = __DIR__ . "/../../../Controllers/dashboard/";
         $name = ucfirst($name);
-        $path = 'app/Controllers/Login/' . $name . '.php';
+        $path = $chemin_dossier . $name . '.php';
         $content = "<?php\n\n";
         $content .= "namespace App\Controllers\Login;\n\n";
         $content .= "use App\Controllers\Controller;\n";
@@ -65,10 +66,16 @@ class MakeDashboardController
         $content .= "    }\n";
         $content .= "}\n";        
 
+        //Vériier si le dossier existe
+        if (!file_exists($chemin_dossier)) {
+            mkdir($chemin_dossier, 0777, true);
+        }
+
         file_put_contents($path, $content);
 
 
-        // Enregistrement du fichier PHP
-        file_put_contents($path, $content);
+        // affichage d'un message de succès dans la console après la création du fichier avec location du fichier
+        echo "\033[32mLe fichier a été créé avec succès dans le dossier $path\033[0m\n";
+        
     }
 }
