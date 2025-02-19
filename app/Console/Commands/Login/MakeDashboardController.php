@@ -8,11 +8,11 @@ class MakeDashboardController
 
     public function makeDashboardController($name = 'DashboardController')
     {
-        $chemin_dossier = __DIR__ . "/../../../Controllers/dashboard/";
+        $chemin_dossier = __DIR__ . "/../../../Controllers/Dashboard/";
         $name = ucfirst($name);
         $path = $chemin_dossier . $name . '.php';
         $content = "<?php\n\n";
-        $content .= "namespace App\Controllers\Login;\n\n";
+        $content .= "namespace App\Controllers\Dashboard;\n\n";
         $content .= "use App\Controllers\Controller;\n";
         $content .= "use App\Views\View;\n";
         $content .= "use App\Auth\Auth;\n\n";

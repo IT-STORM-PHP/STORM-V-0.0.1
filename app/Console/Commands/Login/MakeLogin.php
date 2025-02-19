@@ -270,7 +270,7 @@ $controllerAssignments
         // Ajout des imports à la fin du fichier
         if (strpos($webContent, 'use App\\Controllers\\Login\\LoginController;') === false) {
             $webContent .= "\nuse App\\Controllers\\Login\\LoginController;";
-            $webContent .= "\nuse App\\Controllers\\Login\\DashboardController;";
+            $webContent .= "\nuse App\\Controllers\\Dashboard\\DashboardController;";
         }
 
         // Ajout des routes si elles n'existent pas déjà
