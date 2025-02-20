@@ -4,7 +4,7 @@ namespace App\Console\Commands\Crud;
 
 class CreateCrudViews
 {
-    public function createCrudViews($viewDir, $model, $columns)
+    public function createCrudViews($viewDir, $model, $columns, $foreignKeys = [])
     {
         $modelLower = strtolower($model);
 
@@ -25,22 +25,6 @@ class CreateCrudViews
             }
             return 'text';
         }
-
-        /* function readTemplate($path, $model = null)
-        {
-            $content = file_get_contents(__DIR__ . "../../../public/{$path}.php");
-
-            
-            if ($model !== null) {
-                $content = str_replace('{$model}', $model, $content);
-            }
-
-            return $content;
-        }
-
-
-        $htmlHeader = readTemplate('_header', $model);
-        $htmlFooter = readTemplate('_footer', $model); */
 
         // Trouver la clé primaire
         $primaryKey = 'id'; // Valeur par défaut
@@ -66,7 +50,16 @@ class CreateCrudViews
 <?php foreach (\$items as \$item): ?>\n<tr>";
 
         foreach ($columns as $column) {
-            $listViewContent .= "<td><?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></td>";
+            if (isset($foreignKeys[$column['Field']])) {
+                // Si la colonne est une clé étrangère, afficher une valeur significative
+                $foreignKey = $foreignKeys[$column['Field']];
+                $foreignTable = $foreignKey['table'];
+                $foreignColumn = $foreignKey['column'];
+                $listViewContent .= "<td><?php echo htmlspecialchars(\$item['{$foreignTable}_{$foreignColumn}'] ?? 'N/A'); ?></td>";
+            } else {
+                // Sinon, afficher la valeur de la colonne
+                $listViewContent .= "<td><?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></td>";
+            }
         }
 
         $listViewContent .= "<td>
@@ -79,14 +72,32 @@ class CreateCrudViews
 
         file_put_contents("{$viewDir}/index.php", $listViewContent);
 
+
+
         // Vue Create
         $createViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<div class='container'><h1>Create {$model}</h1>\n<form method='POST' action='/{$modelLower}/store' class='mt-4'>\n";
         foreach ($columns as $column) {
             if (in_array($column['Field'], ['id', 'created_at', 'updated_at', $primaryKey])) continue;
+
             $inputType = getInputType($column['Type']);
             $createViewContent .= "<div class='mb-3'><label class='form-label'>{$column['Field']}</label>";
-            if ($inputType === 'select') {
-                $createViewContent .= "<select name='{$column['Field']}' class='form-select'><option value='1'>Yes</option><option value='0'>No</option></select>";
+
+            // Vérifier si la colonne est une clé étrangère
+            if (isset($foreignKeys[$column['Field']])) {
+                $foreignKey = $foreignKeys[$column['Field']];
+                $foreignTable = $foreignKey['table'];
+                $foreignColumn = $foreignKey['column'];
+                $createViewContent .= "<select name='{$column['Field']}' class='form-select'>";
+                $createViewContent .= "<?php if (!empty(\${$foreignTable})): ?>";
+                $createViewContent .= "<?php foreach (\${$foreignTable} as \${$foreignTable}Item): ?>";
+                $createViewContent .= "<option value='<?php echo \${$foreignTable}Item['{$foreignColumn}']; ?>'><?php echo \${$foreignTable}Item['name']; ?></option>\n"; // Afficher une valeur significative
+                $createViewContent .= "<?php endforeach; ?>";
+                $createViewContent .= "<?php else: ?>";
+                $createViewContent .= "<option value=''>Aucune donnée disponible</option>\n";
+                $createViewContent .= "<?php endif; ?>";
+                $createViewContent .= "</select>";
+            } elseif ($inputType === 'select') {
+                $createViewContent .= "<select name='{$column['Field']}' class='form-select'><option value='1'>Yes</option><option value='0'>No</option></select>\n";
             } elseif ($inputType === 'textarea') {
                 $createViewContent .= "<textarea name='{$column['Field']}' class='form-control'></textarea>";
             } else {
@@ -103,7 +114,16 @@ class CreateCrudViews
         $showViewContent .= "<div class='card mb-4'>\n<div class='card-body'>\n";
 
         foreach ($columns as $column) {
-            $showViewContent .= "<p><strong>{$column['Field']}:</strong> <?php echo htmlspecialchars(\$item['{$column['Field']}'] ?? 'N/A'); ?></p>\n";
+            if (isset($foreignKeys[$column['Field']])) {
+                // Si la colonne est une clé étrangère, afficher une valeur significative
+                $foreignKey = $foreignKeys[$column['Field']];
+                $foreignTable = $foreignKey['table'];
+                $foreignColumn = $foreignKey['column'];
+                $showViewContent .= "<p><strong>{$column['Field']}:</strong> <?php echo htmlspecialchars(\$item['{$foreignTable}_{$foreignColumn}'] ?? 'N/A'); ?></p>\n";
+            } else {
+                // Sinon, afficher la valeur de la colonne
+                $showViewContent .= "<p><strong>{$column['Field']}:</strong> <?php echo htmlspecialchars(\$item['{$column['Field']}'] ?? 'N/A'); ?></p>\n";
+            }
         }
 
         $showViewContent .= "</div>\n</div>\n";
@@ -112,13 +132,30 @@ class CreateCrudViews
 
         file_put_contents("{$viewDir}/show.php", $showViewContent);
 
+
         // Vue Edit
         $editViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<div class='container'><h1>Edit {$model}</h1>\n<form method='POST' action='/{$modelLower}/update/<?php echo \$item['{$primaryKey}']; ?>' class='mt-4'>\n";
         foreach ($columns as $column) {
             if (in_array($column['Field'], ['id', 'created_at', 'updated_at', $primaryKey])) continue;
+
             $inputType = getInputType($column['Type']);
             $editViewContent .= "<div class='mb-3'><label class='form-label'>{$column['Field']}</label>";
-            if ($inputType === 'select') {
+
+            // Vérifier si la colonne est une clé étrangère
+            if (isset($foreignKeys[$column['Field']])) {
+                $foreignKey = $foreignKeys[$column['Field']];
+                $foreignTable = $foreignKey['table'];
+                $foreignColumn = $foreignKey['column'];
+                $editViewContent .= "<select name='{$column['Field']}' class='form-select'>";
+                $editViewContent .= "<?php if (!empty(\${$foreignTable})): ?>";
+                $editViewContent .= "<?php foreach (\${$foreignTable} as \${$foreignTable}Item): ?>";
+                $editViewContent .= "<option value='<?php echo \${$foreignTable}Item['{$foreignColumn}']; ?>' <?php echo (\$item['{$column['Field']}'] == \${$foreignTable}Item['{$foreignColumn}']) ? 'selected' : ''; ?>><?php echo \${$foreignTable}Item['name']; ?></option>"; // Afficher une valeur significative (par exemple, 'name')
+                $editViewContent .= "<?php endforeach; ?>";
+                $editViewContent .= "<?php else: ?>";
+                $editViewContent .= "<option value=''>Aucune donnée disponible</option>";
+                $editViewContent .= "<?php endif; ?>";
+                $editViewContent .= "</select>";
+            } elseif ($inputType === 'select') {
                 $editViewContent .= "<select name='{$column['Field']}' class='form-select'><option value='1'>Yes</option><option value='0'>No</option></select>";
             } elseif ($inputType === 'textarea') {
                 $editViewContent .= "<textarea name='{$column['Field']}' class='form-control'><?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></textarea>";
@@ -129,6 +166,7 @@ class CreateCrudViews
         }
         $editViewContent .= "<button type='submit' class='btn btn-warning'>Update {$model}</button>\n</form>\n</div><?php \$content = ob_get_clean();?>";
         file_put_contents("{$viewDir}/edit.php", $editViewContent);
+
 
         // Vue Delete
         $deleteViewContent = "<?php\n\$title = '<nom de votre page>';\nob_start();?>\n<h1 class='text-danger'>Are you sure you want to delete this {$model}?</h1>\n<form method='POST' action='/{$modelLower}/delete/<?php echo \$item['id']; ?>'>\n<button type='submit' class='btn btn-danger'>Yes, Delete</button>\n<a href='/{$modelLower}' class='btn btn-secondary'>Cancel</a>\n</form>\n<?php \$content = ob_get_clean();?>";

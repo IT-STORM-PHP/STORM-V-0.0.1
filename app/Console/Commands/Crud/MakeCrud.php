@@ -10,6 +10,7 @@ use App\Console\Commands\Crud\CreateController;
 class MakeCrud
 {
     private $createCrudViews, $addRoutesToWeb, $createController;
+
     public function __construct()
     {
         $this->createCrudViews = new CreateCrudViews();
@@ -46,22 +47,25 @@ class MakeCrud
         $stmt->execute();
         $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. Créer le dossier pour les vues
+        // 2. Récupérer les clés étrangères
+        $foreignKeys = $this->getForeignKeys($pdo, $modelLower);
+
+        // 3. Créer le dossier pour les vues
         $viewDir = __DIR__ . "/../../../Views/{$modelLower}";
         if (!is_dir($viewDir)) {
             mkdir($viewDir, 0777, true);
         }
 
         // Créer les vues pour la liste, la création, la modification et la suppression
-        $this->createCrudViews->createCrudViews($viewDir, $model, $columns);
+        $this->createCrudViews->createCrudViews($viewDir, $model, $columns, $foreignKeys);
 
-        // 3. Ajouter les routes dans `routes/web.php`
+        // 4. Ajouter les routes dans `routes/web.php`
         $this->addRoutesToWeb->addRoutesToWeb($model);
 
-        // 4. Générer le contrôleur
-        $this->createController->createController($model, $columns);
+        // 5. Générer le contrôleur
+        $this->createController->createController($model, $columns, $foreignKeys);
 
-        // 5. Générer le modèle
+        // 6. Générer le modèle
         $modelContent = "<?php\n\nnamespace App\Models;\n\n";
         $modelContent .= "use PDO;\n";
         $modelContent .= "use App\Models\Model;\n\ndate_default_timezone_set('GMT');\n\n";
@@ -136,7 +140,6 @@ class MakeCrud
         $modelContent .= "        return \$stmt->execute();\n";
         $modelContent .= "    }\n";
 
-
         // Méthode Delete
         $modelContent .= "\n    public function delete(\$id)\n    {\n";
         $modelContent .= "        \$sql = \"DELETE FROM " . $modelLower . " WHERE {$primaryKey} = :{$primaryKey}\";\n";
@@ -151,5 +154,43 @@ class MakeCrud
         // Créer le fichier du modèle
         file_put_contents("app/Models/{$model}.php", $modelContent);
         echo "✅ Modèle '$model' avec méthodes CRUD créé.\n";
+    }
+
+    /**
+     * Récupère les clés étrangères de la table.
+     *
+     * @param PDO $pdo
+     * @param string $table
+     * @return array
+     */
+    private function getForeignKeys(PDO $pdo, string $table): array
+    {
+        $foreignKeys = [];
+
+        // Requête pour récupérer les clés étrangères
+        $stmt = $pdo->prepare("
+            SELECT 
+                COLUMN_NAME, 
+                REFERENCED_TABLE_NAME, 
+                REFERENCED_COLUMN_NAME 
+            FROM 
+                INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+            WHERE 
+                TABLE_SCHEMA = DATABASE() 
+                AND TABLE_NAME = :table 
+                AND REFERENCED_TABLE_NAME IS NOT NULL
+        ");
+        $stmt->execute(['table' => $table]);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Formater les résultats
+        foreach ($results as $result) {
+            $foreignKeys[$result['COLUMN_NAME']] = [
+                'table' => $result['REFERENCED_TABLE_NAME'],
+                'column' => $result['REFERENCED_COLUMN_NAME'],
+            ];
+        }
+
+        return $foreignKeys;
     }
 }
