@@ -1,4 +1,4 @@
-<?php
+ici "<?php
 
 namespace App\Console\Commands\Crud;
 
@@ -169,4 +169,9 @@ class CreateCrudViews
 
         echo "✅ Vues CRUD pour '$model' créées avec succès.\n";
     }
-}
+}"
+
+
+les diifeentes vu n'affiche que l'id 
+
+ors on sait dit d'afficher la colomne qui suit celle de l'id dans la table de reference

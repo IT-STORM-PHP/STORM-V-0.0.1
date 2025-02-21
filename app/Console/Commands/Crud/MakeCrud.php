@@ -102,7 +102,7 @@ class MakeCrud
         $modelContent .= "\n    public function getAll()\n    {\n";
         $modelContent .= "        \$sql = \"SELECT * FROM " . $modelLower . "\";\n";
         $modelContent .= "        \$stmt = \$this->pdo->query(\$sql);\n";
-        $modelContent .= "        return \$stmt->fetchAll();\n";
+        $modelContent .= "        return \$stmt->fetchAll(PDO::FETCH_ASSOC);\n";
         $modelContent .= "    }\n";
 
         // Trouver la clé primaire dynamiquement
@@ -164,33 +164,51 @@ class MakeCrud
      * @return array
      */
     private function getForeignKeys(PDO $pdo, string $table): array
-    {
-        $foreignKeys = [];
+{
+    $foreignKeys = [];
 
-        // Requête pour récupérer les clés étrangères
-        $stmt = $pdo->prepare("
-            SELECT 
-                COLUMN_NAME, 
-                REFERENCED_TABLE_NAME, 
-                REFERENCED_COLUMN_NAME 
-            FROM 
-                INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-            WHERE 
-                TABLE_SCHEMA = DATABASE() 
-                AND TABLE_NAME = :table 
-                AND REFERENCED_TABLE_NAME IS NOT NULL
-        ");
-        $stmt->execute(['table' => $table]);
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Requête pour récupérer les clés étrangères
+    $stmt = $pdo->prepare("
+        SELECT 
+            COLUMN_NAME, 
+            REFERENCED_TABLE_NAME, 
+            REFERENCED_COLUMN_NAME 
+        FROM 
+            INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+        WHERE 
+            TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = :table 
+            AND REFERENCED_TABLE_NAME IS NOT NULL
+    ");
+    $stmt->execute(['table' => $table]);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Formater les résultats
-        foreach ($results as $result) {
-            $foreignKeys[$result['COLUMN_NAME']] = [
-                'table' => $result['REFERENCED_TABLE_NAME'],
-                'column' => $result['REFERENCED_COLUMN_NAME'],
-            ];
+    // Formater les résultats
+    foreach ($results as $result) {
+        $foreignTable = $result['REFERENCED_TABLE_NAME'];
+        $foreignColumn = $result['REFERENCED_COLUMN_NAME'];
+
+        // Trouver la colonne significative (par exemple, la première colonne de type varchar ou text après l'id)
+        $stmt = $pdo->prepare("DESCRIBE " . $foreignTable);
+        $stmt->execute();
+        $foreignColumns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $displayColumn = $foreignColumn; // Par défaut, utiliser la colonne référencée
+        foreach ($foreignColumns as $col) {
+            if ($col['Field'] !== 'id' && (str_contains($col['Type'], 'varchar') || str_contains($col['Type'], 'text'))) {
+                $displayColumn = $col['Field']; // Utiliser la première colonne de type varchar ou text
+                break;
+            }
         }
 
-        return $foreignKeys;
+        // Ajouter la clé étrangère avec la colonne significative
+        $foreignKeys[$result['COLUMN_NAME']] = [
+            'table' => $foreignTable,
+            'column' => $foreignColumn,
+            'display_column' => $displayColumn, // Colonne significative
+        ];
     }
+
+    return $foreignKeys;
+}
 }
