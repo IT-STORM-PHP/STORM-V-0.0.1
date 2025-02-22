@@ -9,17 +9,10 @@ class MakeDashboard
 
     public function dashBoard (){
         $dashboard_with_bootstrap_menu = <<<DASHBOARD
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Dashboard</title>
-            <link rel='stylesheet' href='/assets/vendor/bootstrap/css/bootstrap.min.css'>
-            <link rel="stylesheet" href="/assets/css/index.css">
-        </head>
-        <body>
+        <?php
+            \$title = 'Dashboard';
+            ob_start();
+            ?>
             <nav class="navbar navbar-dark bg-dark fixed-top">
                 <div class="container-fluid">
                     <a class="navbar-brand" href="/dashboard">Dashboard</a>
@@ -64,11 +57,8 @@ class MakeDashboard
             </div>
             <?php
                     #var_dump(\$usr);
+                    \$content = ob_get_clean();
             ?>
-            
-            <script src='/assets/vendor/bootstrap/js/bootstrap.bundle.min.js'></script>
-        </body>
-        </html>
         DASHBOARD;
 
         // Définition du chemin
