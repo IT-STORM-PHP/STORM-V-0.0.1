@@ -12,6 +12,10 @@ class CreateCrudViews
         function getInputType($type)
         {
             if (str_contains($type, 'int') || str_contains($type, 'float') || str_contains($type, 'double') || str_contains($type, 'decimal')) {
+                // Si c'est un tinyint(1), c'est un booléen
+                if (str_contains($type, 'tinyint(1)')) {
+                    return 'radio'; 
+                }
                 return 'number';
             } elseif (preg_match('/varchar\((\d+)\)/', $type, $matches) && (int)$matches[1] > 255) {
                 return 'textarea';
@@ -21,10 +25,29 @@ class CreateCrudViews
                 return 'date';
             } elseif (str_contains($type, 'datetime') || str_contains($type, 'timestamp')) {
                 return 'datetime-local';
+            } elseif (str_contains($type, 'year')) {
+                return 'year';
+            } elseif (str_contains($type, 'time')) {
+                return 'time';
             } elseif (str_contains($type, 'boolean') || str_contains($type, 'tinyint(1)')) {
-                return 'select';
+                return 'radio'; // Utiliser des boutons radio pour les booléens
+            } elseif (str_contains($type, 'enum')) {
+                return 'enum';
             }
             return 'text';
+        }
+
+        // Fonction pour extraire les valeurs d'un champ ENUM
+        function getEnumValues($type)
+        {
+            if (preg_match("/^enum\((.*)\)$/", $type, $matches)) {
+                $enum = array();
+                foreach (explode(',', $matches[1]) as $value) {
+                    $enum[] = trim($value, "'");
+                }
+                return $enum;
+            }
+            return [];
         }
 
         // Trouver la clé primaire
@@ -94,10 +117,29 @@ class CreateCrudViews
                 $createViewContent .= "<option value=''>Aucune donnée disponible</option>\n";
                 $createViewContent .= "<?php endif; ?>";
                 $createViewContent .= "</select>";
-            } elseif ($inputType === 'select') {
-                $createViewContent .= "<select name='{$column['Field']}' class='form-select'><option value='1'>Yes</option><option value='0'>No</option></select>\n";
+            } elseif ($inputType === 'radio') {
+                // Gestion des boutons radio pour les booléens
+                $createViewContent .= "<div class='form-check'>";
+                $createViewContent .= "<input type='radio' name='{$column['Field']}' value='1' class='form-check-input' id='{$column['Field']}_yes'>";
+                $createViewContent .= "<label class='form-check-label' for='{$column['Field']}_yes'>Yes</label>";
+                $createViewContent .= "</div>";
+                $createViewContent .= "<div class='form-check'>";
+                $createViewContent .= "<input type='radio' name='{$column['Field']}' value='0' class='form-check-input' id='{$column['Field']}_no'>";
+                $createViewContent .= "<label class='form-check-label' for='{$column['Field']}_no'>No</label>";
+                $createViewContent .= "</div>";
             } elseif ($inputType === 'textarea') {
                 $createViewContent .= "<textarea name='{$column['Field']}' class='form-control'></textarea>";
+            } elseif ($inputType === 'enum') {
+                $enumValues = getEnumValues($column['Type']);
+                $createViewContent .= "<select name='{$column['Field']}' class='form-select'>";
+                foreach ($enumValues as $value) {
+                    $createViewContent .= "<option value='{$value}'>{$value}</option>";
+                }
+                $createViewContent .= "</select>";
+            } elseif ($inputType === 'year') {
+                $createViewContent .= "<input type='number' name='{$column['Field']}' min='1900' max='2100' class='form-control'>";
+            } elseif ($inputType === 'time') {
+                $createViewContent .= "<input type='time' name='{$column['Field']}' class='form-control'>";
             } else {
                 $createViewContent .= "<input type='{$inputType}' name='{$column['Field']}' class='form-control'>";
             }
@@ -151,10 +193,29 @@ class CreateCrudViews
                 $editViewContent .= "<option value=''>Aucune donnée disponible</option>";
                 $editViewContent .= "<?php endif; ?>";
                 $editViewContent .= "</select>";
-            } elseif ($inputType === 'select') {
-                $editViewContent .= "<select name='{$column['Field']}' class='form-select'><option value='1'>Yes</option><option value='0'>No</option></select>";
+            } elseif ($inputType === 'radio') {
+                // Gestion des boutons radio pour les booléens
+                $editViewContent .= "<div class='form-check'>";
+                $editViewContent .= "<input type='radio' name='{$column['Field']}' value='1' class='form-check-input' id='{$column['Field']}_yes' <?php echo (\$item['{$column['Field']}'] == 1) ? 'checked' : ''; ?>>";
+                $editViewContent .= "<label class='form-check-label' for='{$column['Field']}_yes'>Yes</label>";
+                $editViewContent .= "</div>";
+                $editViewContent .= "<div class='form-check'>";
+                $editViewContent .= "<input type='radio' name='{$column['Field']}' value='0' class='form-check-input' id='{$column['Field']}_no' <?php echo (\$item['{$column['Field']}'] == 0) ? 'checked' : ''; ?>>";
+                $editViewContent .= "<label class='form-check-label' for='{$column['Field']}_no'>No</label>";
+                $editViewContent .= "</div>";
             } elseif ($inputType === 'textarea') {
                 $editViewContent .= "<textarea name='{$column['Field']}' class='form-control'><?php echo htmlspecialchars(\$item['{$column['Field']}']); ?></textarea>";
+            } elseif ($inputType === 'enum') {
+                $enumValues = getEnumValues($column['Type']);
+                $editViewContent .= "<select name='{$column['Field']}' class='form-select'>";
+                foreach ($enumValues as $value) {
+                    $editViewContent .= "<option value='{$value}' <?php echo (\$item['{$column['Field']}'] == '{$value}') ? 'selected' : ''; ?>>{$value}</option>";
+                }
+                $editViewContent .= "</select>";
+            } elseif ($inputType === 'year') {
+                $editViewContent .= "<input type='number' name='{$column['Field']}' min='1900' max='2100' value='<?php echo htmlspecialchars(\$item['{$column['Field']}']); ?>' class='form-control'>";
+            } elseif ($inputType === 'time') {
+                $editViewContent .= "<input type='time' name='{$column['Field']}' value='<?php echo htmlspecialchars(\$item['{$column['Field']}']); ?>' class='form-control'>";
             } else {
                 $editViewContent .= "<input type='{$inputType}' name='{$column['Field']}' value='<?php echo htmlspecialchars(\$item['{$column['Field']}']); ?>' class='form-control'>";
             }
