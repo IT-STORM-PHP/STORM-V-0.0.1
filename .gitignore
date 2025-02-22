@@ -1,2 +1,18 @@
+# Ignorer les fichiers sensibles
 .env
+
+# Ignorer les dépendances Composer
 vendor/
+
+# Ignorer les fichiers de cache et de logs
+/.idea/
+/.vscode/
+/node_modules/
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+
+# Ignorer les fichiers temporaires
+*.log
+*.tmp
